@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
-    <section className="pt-8 pb-16 lg:pt-12 lg:pb-24 bg-gradient-to-br from-orange-50 to-red-50 relative overflow-hidden">
+    <section className="pt-8 pb-10 lg:pt-12 lg:pb-10 bg-gradient-to-br from-orange-50 to-red-50 relative overflow-hidden">
       <div className="container-custom">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           {/* Left Content */}

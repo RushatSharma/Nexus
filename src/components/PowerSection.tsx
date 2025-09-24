@@ -56,7 +56,7 @@ const services = [
 
 const PowerSection = () => {
   return (
-    <section className="container py-24 sm:py-32">
+    <section className="container py-10 sm:py-10">
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
           Our Core Services

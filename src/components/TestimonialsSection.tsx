@@ -19,7 +19,7 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className="section-padding bg-gray-50">
+    <section className="py-16 bg-gray-50">
       <div className="container-custom">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">

@@ -132,7 +132,7 @@ const ThreeDCarousel = ({
   };
 
   return (
-    <section className="bg-gray-50 py-24 sm:py-32 w-full">
+    <section className="bg-gray-50 py-10 sm:py-10 w-full">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
@@ -200,7 +200,7 @@ const ThreeDCarousel = ({
           {!isMobile && (
             <>
               <button
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center text-gray-600 hover:bg-white z-30 shadow-md transition-all hover:scale-110"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 z-30 shadow-md transition-all hover:scale-110"
                 onClick={() =>
                   setActive((prev) => (prev - 1 + items.length) % items.length)
                 }
@@ -209,7 +209,7 @@ const ThreeDCarousel = ({
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center text-gray-600 hover:bg-white z-30 shadow-md transition-all hover:scale-110"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 z-30 shadow-md transition-all hover:scale-110"
                 onClick={() => setActive((prev) => (prev + 1) % items.length)}
                 aria-label="Next"
               >

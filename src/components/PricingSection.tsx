@@ -34,7 +34,7 @@ const PricingSection = () => {
   ];
 
   return (
-    <section className="section-padding bg-white">
+    <section className="py-10 bg-white">
       <div className="container-custom">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
