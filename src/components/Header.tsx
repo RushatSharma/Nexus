@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Phone } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navigation = [
     { name: 'Home', href: '#' },
@@ -12,6 +13,11 @@ const Header = () => {
     { name: 'Portfolio', href: '#portfolio' },
     { name: 'Contact', href: '#contact' },
   ];
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark', !isDarkMode);
+  };
 
   return (
     <header className="bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
@@ -40,10 +46,18 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-gray-600">
-              <Phone className="w-4 h-4" />
-              <span className="text-sm font-medium">+86 155 4535</span>
-            </div>
+            {/* Theme Toggler */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="Toggle Theme"
+            >
+              {isDarkMode ? (
+                <Sun className="w-5 h-5 text-yellow-500" />
+              ) : (
+                <Moon className="w-5 h-5 text-gray-700" />
+              )}
+            </button>
             <Button className="btn-primary">
               Login
             </Button>

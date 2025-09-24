@@ -27,10 +27,6 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="btn-primary group">
-                Start Demo
-                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-              </Button>
               <Button variant="outline" className="btn-outline">
                 Learn More
               </Button>
