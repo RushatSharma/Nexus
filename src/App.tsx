@@ -6,25 +6,28 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ProjectsPage from "./pages/ProjectsPage";
-import { ContactPage } from "./pages/ContactPage";
-import { AuthPage } from "./pages/AuthPage"; 
+import { AuthProvider } from "./contexts/AuthContext"; // Import AuthProvider
+import {ContactPage} from "./pages/ContactPage";  // ✅ Create this page
+import {AuthPage} from "./pages/AuthPage";  
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-     <Route path="/" element={<Index />} />
-      <Route path="/projects" element={<ProjectsPage />} />
-      <Route path="/contact" element={<ContactPage />} />
-      <Route path="/login" element={<AuthPage />} />
-      <Route path="/signup" element={<AuthPage />} />
-      <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider> {/* Now this will work */}
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+             <Route path="/" element={<Index />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="/signup" element={<AuthPage />} />
+        <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

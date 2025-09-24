@@ -94,9 +94,9 @@ const ProjectCard = ({ project }: { project: (typeof projects)[0] }) => (
 const ProjectsPage = () => {
   return (
     <div className="bg-gray-50">
-      <Header />
+      <Header /> {/* ✅ Show only Home link */}
       <main className="container mx-auto px-4 py-24 sm:px-6 lg:px-8">
-        {/* --- Page Header --- */}
+        {/* Page Header */}
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
             Our Work
@@ -107,7 +107,7 @@ const ProjectsPage = () => {
           </p>
         </div>
 
-        {/* --- Masonry Grid --- */}
+        {/* Masonry Grid */}
         <div className="mt-20 grid grid-cols-12 gap-6">
           {projects.map((project) => (
             <ProjectCard key={project.id} project={project} />

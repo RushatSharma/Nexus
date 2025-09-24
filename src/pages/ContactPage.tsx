@@ -1,34 +1,61 @@
-import  Footer  from "@/components/Footer";
+import { useState } from 'react';
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AuroraTextEffect } from "@/components/AuroraTextEffect";
+import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
+import { db } from '@/firebase'; // Import db
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; // Import firestore functions
 
 export function ContactPage() {
+    const { currentUser } = useAuth(); // Get current user
+    const [service, setService] = useState('');
+    const [message, setMessage] = useState('');
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!currentUser) {
+            setError("You must be logged in to send a message.");
+            return;
+        }
+        if (!service || !message) {
+            setError("Please fill out all fields.");
+            return;
+        }
+        setError('');
+        setSuccess(false);
+
+        try {
+            await addDoc(collection(db, "messages"), {
+                userId: currentUser.uid,
+                email: currentUser.email,
+                service: service,
+                message: message,
+                createdAt: serverTimestamp(),
+                status: 'new'
+            });
+            setSuccess(true);
+            setMessage('');
+            setService('');
+        } catch (err) {
+            setError("Failed to send message. Please try again.");
+        }
+    };
+
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-slate-900">
-      <Header isContactPage={true} /> {/* Pass the prop here */}
-      <main className="flex-grow container mx-auto px-4 py-10 lg:py-10">
+      <Header isContactPage={true} />
+      <main className="flex-grow container mx-auto px-4 py-12 lg:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          {/* Text Content Column */}
           <div className="text-left">
             <AuroraTextEffect
               text="Let's Talk Business"
@@ -51,7 +78,6 @@ export function ContactPage() {
                 <li>Current Marketing Challenges</li>
               </ul>
             </p>
-
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="bg-primary/10 text-primary p-2 rounded-full">
@@ -69,10 +95,10 @@ export function ContactPage() {
                   <Mail className="w-5 h-5" />
                 </div>
                 <a
-                  href="mailto:hello@boosttip.com"
+                  href="mailto:hello@nexus.com"
                   className="text-lg text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"
                 >
-                  hello@boosttip.com
+                  hello@nexus.com
                 </a>
               </div>
               <div className="flex items-center space-x-3">
@@ -85,84 +111,64 @@ export function ContactPage() {
               </div>
             </div>
           </div>
-
-          {/* Form Column */}
           <div>
             <Card className="border-gray-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-2xl">Get a Free Quote</CardTitle>
-                <CardDescription className="text-base">
-                  Fill out the form and our team will be in touch shortly.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="full-name" className="text-base">Full Name</Label>
-                      <Input id="full-name" placeholder="Enter your full name" className="text-base p-3" />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="company-name" className="text-base">Company Name</Label>
-                      <Input id="company-name" placeholder="Enter your company name" className="text-base p-3" />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="email" className="text-base">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="m@example.com"
-                        className="text-base p-3"
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="phone" className="text-base">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+1 234 567 890"
-                        className="text-base p-3"
-                      />
-                    </div>
-                    <div className="sm:col-span-2 grid gap-2">
-                      <Label htmlFor="services" className="text-base">Services Interested In</Label>
-                      <Select>
-                        <SelectTrigger id="services" className="text-base p-3">
-                          <SelectValue placeholder="Select a service" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="seo" className="text-base">SEO</SelectItem>
-                          <SelectItem value="social-media" className="text-base">
-                            Social Media Marketing
-                          </SelectItem>
-                          <SelectItem value="content-marketing" className="text-base">
-                            Content Marketing
-                          </SelectItem>
-                          <SelectItem value="ppc" className="text-base">PPC Advertising</SelectItem>
-                          <SelectItem value="web-development" className="text-base">
-                            Web Development
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="sm:col-span-2 grid gap-2">
-                      <Label htmlFor="message" className="text-base">Message</Label>
-                      <Textarea
-                        id="message"
-                        placeholder="Tell us about your project goals"
-                        className="text-base p-3"
-                      />
-                    </div>
-                  </div>
+                <CardHeader>
+                    <CardTitle className="text-2xl">Get a Free Quote</CardTitle>
+                    <CardDescription className="text-base">
+                    Fill out the form and our team will be in touch shortly.
+                    </CardDescription>
+                </CardHeader>
+                <form onSubmit={handleSubmit}>
+                    <CardContent className="space-y-4">
+                        <div className="sm:col-span-2 grid gap-2">
+                        <Label htmlFor="services" className="text-base">Services Interested In</Label>
+                        <Select onValueChange={setService} value={service}>
+                            <SelectTrigger id="services" className="text-base p-3">
+                            <SelectValue placeholder="Select a service" />
+                            </SelectTrigger>
+                            <SelectContent>
+                            <SelectItem value="seo" className="text-base">SEO</SelectItem>
+                            <SelectItem value="social-media" className="text-base">
+                                Social Media Marketing
+                            </SelectItem>
+                            <SelectItem value="content-marketing" className="text-base">
+                                Content Marketing
+                            </SelectItem>
+                            <SelectItem value="ppc" className="text-base">PPC Advertising</SelectItem>
+                            <SelectItem value="web-development" className="text-base">
+                                Web Development
+                            </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        </div>
+                        <div className="sm:col-span-2 grid gap-2">
+                        <Label htmlFor="message" className="text-base">Message</Label>
+                        <Textarea
+                            id="message"
+                            placeholder="Tell us about your project goals"
+                            className="text-base p-3"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                        />
+                        </div>
+                         {error && <p className="text-sm text-red-500">{error}</p>}
+                        {success && (
+                            <div className="flex items-center text-sm text-green-600">
+                                <CheckCircle className="w-4 h-4 mr-2"/>
+                                Message sent successfully! We'll get back to you soon.
+                            </div>
+                        )}
+                    </CardContent>
+                    <CardFooter className="flex justify-end">
+                        <Button type="submit" className="btn-primary text-base px-6 py-3">Send Message</Button>
+                    </CardFooter>
                 </form>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button className="btn-primary text-base px-6 py-3">Send Message</Button>
-              </CardFooter>
             </Card>
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
