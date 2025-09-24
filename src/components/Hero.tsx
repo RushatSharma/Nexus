@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Star, ArrowRight } from 'lucide-react';
 import heroImage from '@/assets/megaphone-illustration.png';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
@@ -37,9 +38,11 @@ const Hero = () => {
 
             {/* --- NEW BLACK COMPONENT START --- */}
             <div className="bg-gray-900 text-white p-8 rounded-3xl relative max-w-md pt-6">
-                <div className="absolute top-4 right-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transform -rotate-45"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                </div>
+                <Link to="/projects">
+                  <div className="absolute top-4 right-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transform -rotate-45"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                  </div>
+                </Link>
               <div className="flex items-center space-x-2 mb-3">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
@@ -77,4 +80,3 @@ const Hero = () => {
 };
 
 export default Hero;
-
