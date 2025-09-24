@@ -109,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({ isContactPage }) => {
   const navigation = location.pathname === "/projects"
     ? [{ name: "Home", href: "/" }]
     : [
-        { name: 'Home', href: '#' },
+        { name: 'Home', href: '/' },
         { name: 'About', href: '#about' },
         { name: 'Services', href: '#services' },
         { name: 'Projects', href: '/projects' },
@@ -155,7 +155,12 @@ const Header: React.FC<HeaderProps> = ({ isContactPage }) => {
             </button>
             
             {currentUser ? (
+              <>
+                <Link to="/contact">
+                  <Button variant="ghost">Contact Us</Button>
+                </Link>
                 <ProfileButton />
+              </>
             ) : (
               <div className="flex items-center gap-2">
                 <Link to="/contact">
@@ -193,6 +198,9 @@ const Header: React.FC<HeaderProps> = ({ isContactPage }) => {
                  {currentUser ? (
                      <div className='px-3 flex flex-col gap-3'>
                         <p className="text-gray-500">Welcome, {userData?.name || 'User'}</p>
+                        <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
+                          <Button variant="ghost" className="w-full">Contact Us</Button>
+                        </Link>
                         <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
                             <LogOut className="w-4 h-4 mr-2" />
                             Logout

@@ -2,9 +2,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ArrowRight } from "lucide-react";
 import React from "react";
+import { AuroraTextEffect } from "@/components/AuroraTextEffect"; // import AuroraTextEffect
 
 // --- Project Data ---
-// You can easily replace this with your actual project data.
 const projects = [
   {
     id: 1,
@@ -95,15 +95,19 @@ const ProjectsPage = () => {
   return (
     <div className="bg-gray-50">
       <Header /> {/* ✅ Show only Home link */}
-      <main className="container mx-auto px-4 py-24 sm:px-6 lg:px-8">
+      <main className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
-            Our Work
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600">
-            We partner with ambitious brands to create digital experiences that
-            drive results. Explore some of our favorite projects.
+          <AuroraTextEffect
+            text="Transforming Ideas into Impactful Digital Experiences"
+            fontSize="clamp(2rem, 5vw, 3rem)" // reduced size
+            className="flex justify-center items-center p-0 m-0 text-center" // center-aligned
+            textClassName="tracking-tight font-extrabold text-gray-900 text-center"
+          />
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 text-center">
+            From startups to industry leaders, we partner with ambitious brands to
+            craft digital solutions that not only look stunning but deliver measurable results. 
+            Dive into a showcase of projects that inspire, engage, and drive business growth.
           </p>
         </div>
 

@@ -6,7 +6,7 @@ import { AuroraTextEffect } from './AuroraTextEffect'; // Make sure this path is
 
 const Hero = () => {
   return (
-    <section className="pt-8 pb-10 lg:pt-12 lg:pb-10 bg-gradient-to-br from-orange-50 to-red-50 relative overflow-hidden">
+    <section className="pt-8 pb-12 lg:pt-12 lg:pb-12 bg-gradient-to-br from-orange-50 to-red-50 relative overflow-hidden">
       <div className="container-custom">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           {/* Left Content */}
@@ -47,7 +47,7 @@ const Hero = () => {
 
             {/* --- NEW BLACK COMPONENT START --- */}
             <div className="bg-gray-900 text-white p-8 rounded-3xl relative max-w-md pt-6">
-              <Link to="/projects">
+              <Link to="/contact">
                 <div className="absolute top-4 right-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-110">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transform -rotate-45"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                 </div>
