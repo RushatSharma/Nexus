@@ -6,9 +6,9 @@ const Hero = () => {
   return (
     <section className="pt-8 pb-16 lg:pt-12 lg:pb-24 bg-gradient-to-br from-orange-50 to-red-50 relative overflow-hidden">
       <div className="container-custom">
-        <div className="grid lg:grid-cols-1 gap-12 items-center">
+        <div className="grid lg:grid-cols-12 gap-12 items-center">
           {/* Left Content */}
-          <div className="space-y-8">
+          <div className="space-y-8 lg:col-span-7">
             <div className="space-y-4">
               <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
@@ -16,12 +16,12 @@ const Hero = () => {
               </div>
               
               <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Marketing{' '}
-                <span className="text-gradient">Digital Partner</span>
+                Your Next-Gen{' '}
+                <span className="text-gradient">Digital Marketing</span> Partner
               </h1>
               
-              <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
-                Discover Your New Website/Product/App for Marketing Efforts to your business. To bring the power of Online Market.
+              <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
+                We craft stunning websites, develop powerful apps, and create data-driven marketing strategies that captivate your audience and accelerate business growth. Let us be the catalyst that brings your vision to the online market.
               </p>
             </div>
 
@@ -60,13 +60,15 @@ const Hero = () => {
               </h3>
             </div>
             {/* --- NEW BLACK COMPONENT END --- */}
-<div className="relative flex justify-center lg:justify-end">
+          </div>
+          
+          {/* Right Content (Image) */}
+          <div className="relative flex justify-center lg:justify-end lg:col-span-5">
             <img
               src={heroImage}
               alt="Digital Marketing Illustration"
               className="w-full max-w-sm md:max-w-md lg:max-w-full h-auto object-contain"
             />
-          </div>
           </div>
         </div>
       </div>
@@ -75,3 +77,4 @@ const Hero = () => {
 };
 
 export default Hero;
+
