@@ -1,25 +1,25 @@
-import Header from '@/components/Header';
-import Hero from '@/components/Hero';
-import WhatsAppSection from '@/components/WhatsAppSection';
-import PowerSection from '@/components/PowerSection';
-import PricingSection from '@/components/PricingSection';
-import TestimonialsSection from '@/components/TestimonialsSection';
-import StatsSection from '@/components/StatsSection';
-import Footer from '@/components/Footer';
 
-const Index = () => {
+import Footer  from "@/components/Footer";
+import   Header  from "@/components/Header";
+import  Hero  from "@/components/Hero";
+import  PowerSection  from "@/components/PowerSection";
+import  PricingSection  from "@/components/PricingSection";
+import  StatsSection  from "@/components/StatsSection";
+import  TestimonialsSection  from "@/components/TestimonialsSection";
+import  WhatsAppSection  from "@/components/WhatsAppSection";
+
+export default function Index() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
       <Header />
       <Hero />
       <WhatsAppSection />
       <PowerSection />
-      <PricingSection />
       <TestimonialsSection />
-      <StatsSection />
+      <PricingSection />
       <Footer />
-    </div>
+    </>
   );
-};
+}
 
-export default Index;
+// <StatsSection />

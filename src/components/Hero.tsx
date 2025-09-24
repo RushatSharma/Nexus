@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { Star, ArrowRight } from 'lucide-react';
+import { Star } from 'lucide-react';
 import heroImage from '@/assets/megaphone-illustration.png';
 import { Link } from 'react-router-dom';
+import { AuroraTextEffect } from './AuroraTextEffect'; // Make sure this path is correct
 
 const Hero = () => {
   return (
@@ -16,10 +17,22 @@ const Hero = () => {
                 <span className="text-sm font-semibold">BoostTip Assistant</span>
               </div>
               
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Your Next-Gen{' '}
-                <span className="text-gradient">Digital Marketing</span> Partner
-              </h1>
+              {/* --- UPDATED HEADLINE START --- */}
+              <div className="flex flex-wrap items-baseline gap-x-2 lg:gap-x-3">
+                <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                  Next-Gen
+                </h1>
+                <AuroraTextEffect
+                  text="Brand & Digital"
+                  fontSize="clamp(2.25rem, 7vw, 3.75rem)" // Matches lg:text-6xl
+                  className="p-0 m-0"
+                  textClassName="leading-tight font-bold"
+                />
+                <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                  Growth
+                </h1>
+              </div>
+              {/* --- UPDATED HEADLINE END --- */}
               
               <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
                 We craft stunning websites, develop powerful apps, and create data-driven marketing strategies that captivate your audience and accelerate business growth. Let us be the catalyst that brings your vision to the online market.
@@ -34,28 +47,20 @@ const Hero = () => {
 
             {/* --- NEW BLACK COMPONENT START --- */}
             <div className="bg-gray-900 text-white p-8 rounded-3xl relative max-w-md pt-6">
-                <Link to="/projects">
-                  <div className="absolute top-4 right-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transform -rotate-45"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                  </div>
-                </Link>
+              <Link to="/projects">
+                <div className="absolute top-4 right-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-110">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transform -rotate-45"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                </div>
+              </Link>
               <div className="flex items-center space-x-2 mb-3">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
               <div className="flex items-center space-x-4 mb-4">
-                <div className="bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full">
-                  Users
-                </div>
-                <div className="flex -space-x-3">
-                    <img className="w-8 h-8 rounded-full border-2 border-gray-800 object-cover" src="https://i.pravatar.cc/32?img=1" alt="user 1" />
-                    <img className="w-8 h-8 rounded-full border-2 border-gray-800 object-cover" src="https://i.pravatar.cc/32?img=2" alt="user 2" />
-                    <img className="w-8 h-8 rounded-full border-2 border-gray-800 object-cover" src="https://i.pravatar.cc/32?img=3" alt="user 3" />
-                </div>
               </div>
               <h3 className="text-xl font-semibold leading-snug text-left">
-                Explore Our 370+ Real Project That Help Our Clients Business Growth Every Year
+                Explore Our Real Project That Help Our Clients Business Growth Every Year
               </h3>
             </div>
             {/* --- NEW BLACK COMPONENT END --- */}

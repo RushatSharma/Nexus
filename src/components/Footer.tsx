@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import NexusLogo from '@/assets/Logo.png'; // Import logo
 
 const Footer = () => {
   const footerLinks = {
@@ -24,10 +25,8 @@ const Footer = () => {
             {/* Company Info */}
             <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">B</span>
-                </div>
-                <span className="text-xl font-bold text-white">BoostTip</span>
+                <img src={NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
+                <span className="text-xl font-bold text-white">NEXUS</span>
               </div>
               
               <p className="text-gray-300 leading-relaxed max-w-md">
@@ -37,7 +36,7 @@ const Footer = () => {
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 text-gray-300">
                   <Mail className="w-5 h-5 text-primary" />
-                  <span>contact@boosttip.com</span>
+                  <span>contact@nexus.com</span>
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
                   <Phone className="w-5 h-5 text-primary" />
@@ -112,7 +111,7 @@ const Footer = () => {
         <div className="py-6 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm">
-              © 2024 BoostTip. All rights reserved.
+              © 2024 NEXUS. All rights reserved.
             </p>
             <div className="flex items-center space-x-6 text-sm">
               <a href="#" className="text-gray-400 hover:text-primary transition-colors">
