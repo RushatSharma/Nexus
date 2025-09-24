@@ -1,86 +1,94 @@
-import { Button } from '@/components/ui/button';
-import { Download, Users, CheckCircle } from 'lucide-react';
+import {
+  TrendingUp,
+  MousePointerClick,
+  ThumbsUp,
+  FileText,
+  Palette,
+  Search,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Array containing the services data with added gradient color properties for the hover effect
+const services = [
+  {
+    icon: <Search className="h-8 w-8 text-blue-500" />,
+    title: "Search Engine Optimization (SEO)",
+    description:
+      "Boost your website's visibility on search engines to rank higher for relevant keywords and increase organic traffic.",
+    gradient: "from-blue-500 to-blue-300",
+  },
+  {
+    icon: <MousePointerClick className="h-8 w-8 text-green-500" />,
+    title: "Pay-Per-Click (PPC) Advertising",
+    description:
+      "Get immediate, targeted traffic. We create and manage effective PPC campaigns to maximize your return on investment.",
+    gradient: "from-green-500 to-green-300",
+  },
+  {
+    icon: <ThumbsUp className="h-8 w-8 text-indigo-500" />,
+    title: "Social Media Marketing",
+    description:
+      "Engage your audience and build your brand on social platforms. We develop strategies to grow your community and drive meaningful interactions.",
+    gradient: "from-indigo-500 to-indigo-300",
+  },
+  {
+    icon: <FileText className="h-8 w-8 text-red-500" />,
+    title: "Content Marketing",
+    description:
+      "Attract and retain customers with high-quality content that establishes you as an industry leader.",
+    gradient: "from-red-500 to-red-300",
+  },
+  {
+    icon: <Palette className="h-8 w-8 text-purple-500" />,
+    title: "Branding & Creative Services",
+    description:
+      "Craft a memorable brand identity, from logo design to your brand's voice, that makes you stand out from the competition.",
+    gradient: "from-purple-500 to-purple-300",
+  },
+  {
+    icon: <TrendingUp className="h-8 w-8 text-orange-500" />,
+    title: "Analytics & Reporting",
+    description:
+      "Make data-driven decisions. We provide detailed analytics and transparent reporting to track progress and refine strategies.",
+    gradient: "from-orange-500 to-orange-300",
+  },
+];
 
 const PowerSection = () => {
-  const cards = [
-    {
-      title: 'Easy To Export Data',
-      color: 'bg-gradient-to-br from-blue-500 to-blue-600',
-      icon: Download,
-    },
-    {
-      title: 'X17 Delivered Reports',
-      color: 'bg-gradient-to-br from-primary to-red-500',
-      icon: CheckCircle,
-    },
-    {
-      title: 'Easy To Download',
-      color: 'bg-gradient-to-br from-gray-800 to-gray-900',
-      isLarge: true,
-    },
-    {
-      title: 'Manage Multiple Account',
-      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
-      icon: Users,
-    },
-    {
-      title: 'Check Our Product Features',
-      color: 'bg-gradient-to-br from-gray-800 to-gray-900',
-      isLarge: true,
-      isProduct: true,
-    }
-  ];
-
   return (
-    <section className="section-padding bg-gray-50">
-      <div className="container-custom">
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            The Power of Our Marketing Software
-          </h2>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            Software Your Company Decline to Feel Their Has created an incredible Impact & Excellent Solution, to help your Product & Helping you find much better your business for the new Year.
-          </p>
-        </div>
+    <section className="container py-24 sm:py-32">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
+          Our Core Services
+        </h2>
+        <p className="mt-4 text-lg text-gray-600 md:text-xl">
+          We provide a comprehensive suite of digital marketing services to help
+          your business grow.
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {cards.map((card, index) => (
-            <div
-              key={index}
-              className={`${card.color} rounded-3xl p-8 text-white relative overflow-hidden card-hover ${
-                card.isLarge ? 'md:col-span-2' : ''
-              } ${index === 2 ? 'lg:row-span-2' : ''}`}
-            >
-              <div className="relative z-10">
-                {card.icon && (
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6">
-                    <card.icon className="w-6 h-6" />
+      <div className="mx-auto mt-16 max-w-5xl">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((service) => (
+            <div key={service.title} className="group relative">
+              <div
+                className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r ${service.gradient} opacity-0 blur transition-all duration-300 group-hover:opacity-75`}
+              />
+              <Card className="relative flex h-full flex-col text-center transition-transform duration-300 group-hover:-translate-y-2">
+                <CardHeader className="pt-8 pb-4">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                    {service.icon}
                   </div>
-                )}
-                
-                <h3 className="text-xl lg:text-2xl font-bold mb-4">
-                  {card.title}
-                </h3>
-                
-                {card.isProduct && (
-                  <div className="mt-8">
-                    <Button variant="secondary" className="bg-primary hover:bg-primary-dark text-white">
-                      Check Features
-                    </Button>
-                  </div>
-                )}
-              </div>
-              
-              {/* Decorative circle */}
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
-              
-              {/* Additional decorative elements for larger cards */}
-              {card.isLarge && (
-                <>
-                  <div className="absolute top-4 right-4 w-16 h-16 bg-white/10 rounded-full"></div>
-                  <div className="absolute bottom-8 left-8 w-8 h-8 bg-white/20 rounded-full"></div>
-                </>
-              )}
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col">
+                  <CardTitle className="mb-3 text-xl font-bold">
+                    {service.title}
+                  </CardTitle>
+                  <p className="flex-1 text-md text-gray-700">
+                    {service.description}
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           ))}
         </div>
@@ -90,3 +98,4 @@ const PowerSection = () => {
 };
 
 export default PowerSection;
+
