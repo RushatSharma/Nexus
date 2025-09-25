@@ -130,19 +130,14 @@ export function ContactPage() {
                                             <SelectTrigger id="services" className="text-base p-3">
                                                 <SelectValue placeholder="Select a service" />
                                             </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="seo" className="text-base">SEO</SelectItem>
-                                                <SelectItem value="social-media" className="text-base">
-                                                    Social Media Marketing
-                                                </SelectItem>
-                                                <SelectItem value="content-marketing" className="text-base">
-                                                    Content Marketing
-                                                </SelectItem>
-                                                <SelectItem value="ppc" className="text-base">PPC Advertising</SelectItem>
-                                                <SelectItem value="web-development" className="text-base">
-                                                    Web Development
-                                                </SelectItem>
-                                            </SelectContent>
+                                           <SelectContent>
+  <SelectItem value="seo" className="text-base">Search Engine Optimization (SEO)</SelectItem>
+  <SelectItem value="ppc" className="text-base">Pay-Per-Click (PPC) Advertising</SelectItem>
+  <SelectItem value="social-media" className="text-base">Social Media Marketing</SelectItem>
+  <SelectItem value="content-marketing" className="text-base">Content Marketing</SelectItem>
+  <SelectItem value="branding-creative" className="text-base">Branding & Creative Services</SelectItem>
+  <SelectItem value="analytics-reporting" className="text-base">Analytics & Reporting</SelectItem>
+</SelectContent>
                                         </Select>
                                     </div>
                                     <div className="sm:col-span-2 grid gap-2">
