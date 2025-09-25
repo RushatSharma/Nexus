@@ -9,6 +9,8 @@ import ProjectsPage from "./pages/ProjectsPage";
 import { AuthProvider } from "./contexts/AuthContext"; // Import AuthProvider
 import {ContactPage} from "./pages/ContactPage";  // ✅ Create this page
 import {AuthPage} from "./pages/AuthPage";  
+import { HashRouter as Router } from "react-router-dom";
+
 const queryClient = new QueryClient();
 
 const App = () => (

@@ -35,7 +35,7 @@ const Hero = () => {
               {/* --- UPDATED HEADLINE END --- */}
               
               <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
-                We craft stunning websites, develop powerful apps, and create data-driven marketing strategies that captivate your audience and accelerate business growth. Let us be the catalyst that brings your vision to the online market.
+                We craft stunning and data-driven marketing strategies that captivate your audience and accelerate business growth. Let us be the catalyst that brings your vision to the online market.
               </p>
             </div>
 
