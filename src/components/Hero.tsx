@@ -14,7 +14,7 @@ const Hero = () => {
             <div className="space-y-4">
               <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                <span className="text-sm font-semibold">BoostTip Assistant</span>
+                <span className="text-sm font-semibold">AI Assistance coming soon!</span>
               </div>
               
               {/* --- UPDATED HEADLINE START --- */}
