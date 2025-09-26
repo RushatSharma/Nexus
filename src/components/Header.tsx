@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // ✅ Added useLocation
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Sun, Moon, LogOut } from 'lucide-react';
 import NexusLogo from '@/assets/Logo.png';
@@ -94,26 +94,19 @@ const ProfileButton = () => {
     )
 }
 
-interface HeaderProps {
-  isContactPage?: boolean;
-}
-
-const Header: React.FC<HeaderProps> = ({ isContactPage }) => {
+const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ Detect current page
 
-  // ✅ Navigation changes based on page
-  const navigation = location.pathname === "/projects"
-    ? [{ name: "Home", href: "/" }]
-    : [
-        { name: 'Home', href: '/' },
-        { name: 'About', href: '#about' },
-        { name: 'Services', href: '#services' },
-        { name: 'Projects', href: '/projects' },
-      ];
+  // Consistent navigation for all pages
+  const navigation = [
+    { name: 'Home', href: '/' },
+    { name: 'About', href: '/about' },
+    { name: 'Projects', href: '/projects' },
+    { name: 'Contact Us', href: '/contact' },
+  ];
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -128,24 +121,31 @@ const Header: React.FC<HeaderProps> = ({ isContactPage }) => {
   return (
     <header className="bg-white/95 backdrop-blur-sm dark:bg-slate-900/95 dark:border-slate-800 border-b border-gray-100 sticky top-0 z-50">
       <div className="container-custom">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          <Link to="/" className="flex items-center space-x-2">
-            <img src={NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
-            <span className="text-xl font-bold text-gray-900 dark:text-white">NEXUS</span>
-          </Link>
-          <nav className="hidden lg:flex items-center space-x-8">
+        <div className="relative flex items-center justify-between h-16 lg:h-20">
+          
+          {/* Left Side: Logo */}
+          <div className="lg:flex-1 flex justify-start">
+            <Link to="/" className="flex items-center space-x-2">
+              <img src={NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
+              <span className="text-xl font-bold text-gray-900 dark:text-white">NEXUS</span>
+            </Link>
+          </div>
+
+          {/* Center: Navigation (Desktop) */}
+          <nav className="hidden lg:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 items-center space-x-8">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
+                to={item.href}
                 className="text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary font-medium transition-colors duration-200"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
-          <div className="hidden lg:flex items-center space-x-4">
+          {/* Right Side: Theme Toggle and Auth (Desktop) */}
+          <div className="hidden lg:flex flex-1 justify-end items-center space-x-4">
             <button
               onClick={toggleTheme}
               className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
@@ -155,17 +155,9 @@ const Header: React.FC<HeaderProps> = ({ isContactPage }) => {
             </button>
             
             {currentUser ? (
-              <>
-                <Link to="/contact">
-                  <Button variant="ghost">Contact Us</Button>
-                </Link>
-                <ProfileButton />
-              </>
+              <ProfileButton />
             ) : (
               <div className="flex items-center gap-2">
-                <Link to="/contact">
-                  <Button variant="ghost">Contact Us</Button>
-                </Link>
                 <Link to="/signup">
                   <Button className="btn-primary">Sign Up</Button>
                 </Link>
@@ -173,34 +165,35 @@ const Header: React.FC<HeaderProps> = ({ isContactPage }) => {
             )}
           </div>
 
-          <button
-            className="lg:hidden p-2 rounded-md text-gray-700 dark:text-gray-300"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Menu Button (Only appears on small screens) */}
+          <div className="lg:hidden">
+            <button
+              className="p-2 rounded-md text-gray-700 dark:text-gray-300"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
+        {/* Mobile Menu Content */}
         {isMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-100 dark:border-slate-800">
             <nav className="flex flex-col space-y-3">
               {navigation.map((item) => (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
+                  to={item.href}
                   className="text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary px-3 py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
               <div className="pt-3 border-t border-gray-100 dark:border-slate-800 flex flex-col gap-3">
                  {currentUser ? (
                      <div className='px-3 flex flex-col gap-3'>
                         <p className="text-gray-500">Welcome, {userData?.name || 'User'}</p>
-                        <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
-                          <Button variant="ghost" className="w-full">Contact Us</Button>
-                        </Link>
                         <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
                             <LogOut className="w-4 h-4 mr-2" />
                             Logout
@@ -208,14 +201,18 @@ const Header: React.FC<HeaderProps> = ({ isContactPage }) => {
                      </div>
                  ) : (
                      <>
-                        <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
-                            <Button variant="outline" className="w-full">Contact Us</Button>
-                        </Link>
                         <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
                             <Button className="btn-primary w-full">Sign Up</Button>
                         </Link>
                     </>
                  )}
+                 {/* Adding theme toggle to mobile menu as well */}
+                 <div className="px-3 pt-2">
+                    <Button variant="outline" className="w-full" onClick={toggleTheme}>
+                        {isDarkMode ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                        Toggle Theme
+                    </Button>
+                 </div>
               </div>
             </nav>
           </div>

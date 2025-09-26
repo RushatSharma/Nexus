@@ -88,15 +88,22 @@ export default {
             height: "0",
           },
         },
-        "spin-slow": { // Added this
+        "spin-slow": {
           "from": { transform: "rotate(0deg)" },
           "to": { transform: "rotate(360deg)" },
+        },
+        // NEWLY ADDED ANIMATION
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "spin-slow": "spin-slow 50s linear infinite", // Added this
+        "spin-slow": "spin-slow 50s linear infinite",
+        // NEWLY ADDED ANIMATION UTILITY
+        "float": "float 6s ease-in-out infinite",
       },
     },
   },
