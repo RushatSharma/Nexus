@@ -10,46 +10,46 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 9% 10%;
+    --background: 36 100% 98%; /* #FFFBF5 */
+    --foreground: 0 0% 0%; /* #000000 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 9% 10%;
+    --card: 36 100% 98%; /* #FFFBF5 */
+    --card-foreground: 0 0% 0%; /* #000000 */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 9% 10%;
+    --popover: 36 100% 98%; /* #FFFBF5 */
+    --popover-foreground: 0 0% 0%; /* #000000 */
 
     /* Brand Colors */
-    --primary: 12 100% 62%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 12 100% 85%;
-    --primary-dark: 12 100% 45%;
+    --primary: 348 89% 41%; /* #ca0b32 */
+    --primary-foreground: 0 0% 100%; /* White */
+    --primary-light: 348 89% 85%;
+    --primary-dark: 348 89% 30%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 9% 10%;
+    --secondary: 36 100% 98%; /* #FFFBF5 - Same as background */
+    --secondary-foreground: 0 0% 0%; /* #000000 - Same as foreground */
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 33 33% 91%; /* #EAE0D5 */
+    --muted-foreground: 0 0% 25%; /* Darker version of foreground for muted text */
 
-    --accent: 12 100% 62%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 348 89% 41%; /* #ca0b32 */
+    --accent-foreground: 0 0% 100%; /* White */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 12 100% 62%;
+    --border: 33 33% 91%; /* #EAE0D5 */
+    --input: 33 33% 91%; /* #EAE0D5 */
+    --ring: 348 89% 41%; /* #ca0b32 */
 
-    /* Dark theme colors */
+    /* Dark theme colors (unchanged) */
     --dark-bg: 220 27% 8%;
     --dark-card: 220 27% 12%;
     --dark-foreground: 0 0% 98%;
 
     /* Success and Info colors */
-    --success: 142 76% 36%;
-    --info: 221 83% 53%;
-    --warning: 38 92% 50%;
+    --success: 122 48% 34%; /* #2E7D32 */
+    --info: 30 100% 45%; /* #E65100 */
+    --warning: 36 100% 50%; /* #FF8F00 */
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-dark)));
@@ -85,7 +85,7 @@ All colors MUST be HSL.
     --popover: 220 27% 12%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 12 100% 62%;
+    --primary: 348 89% 41%; /* #ca0b32 */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 27% 16%;
@@ -94,7 +94,7 @@ All colors MUST be HSL.
     --muted: 220 27% 16%;
     --muted-foreground: 220 9% 65%;
 
-    --accent: 12 100% 62%;
+    --accent: 348 89% 41%; /* #ca0b32 */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -102,7 +102,7 @@ All colors MUST be HSL.
 
     --border: 220 27% 16%;
     --input: 220 27% 16%;
-    --ring: 12 100% 62%;
+    --ring: 348 89% 41%; /* #ca0b32 */
   }
 }
 
@@ -112,7 +112,7 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-jakarta;
+    @apply bg-background text-foreground font-jakarta font-medium;
   }
 
   html {

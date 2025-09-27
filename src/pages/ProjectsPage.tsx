@@ -66,8 +66,8 @@ const ProjectCard = ({ project }: { project: (typeof projects)[0] }) => (
     />
     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
     <div className="relative flex h-full flex-col justify-end p-6 md:p-8">
-      <h3 className="text-lg font-semibold text-orange-400">{project.client}</h3>
-      <h2 className="mt-2 text-3xl font-bold text-white transition-colors duration-300 group-hover:text-orange-500 md:text-4xl">
+      <h3 className="text-lg font-semibold text-primary">{project.client}</h3>
+      <h2 className="mt-2 text-3xl font-bold text-white transition-colors duration-300 group-hover:text-primary-light md:text-4xl">
         {project.title}
       </h2>
       <p className="mt-4 max-w-lg text-gray-300">{project.description}</p>
@@ -93,7 +93,7 @@ const ProjectCard = ({ project }: { project: (typeof projects)[0] }) => (
 
 const ProjectsPage = () => {
   return (
-    <div className="bg-gray-50">
+    <div className="bg-background">
       <Header /> {/* ✅ Show only Home link */}
       <main className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         {/* Page Header */}
@@ -102,9 +102,9 @@ const ProjectsPage = () => {
             text="Transforming Ideas into Impactful Digital Experiences"
             fontSize="clamp(2rem, 5vw, 3rem)" // reduced size
             className="flex justify-center items-center p-0 m-0 text-center" // center-aligned
-            textClassName="tracking-tight font-extrabold text-gray-900 text-center"
+            textClassName="tracking-tight font-extrabold text-foreground text-center"
           />
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 text-center">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground text-center">
             From startups to industry leaders, we partner with ambitious brands to
             craft digital solutions that not only look stunning but deliver measurable results. 
             Dive into a showcase of projects that inspire, engage, and drive business growth.

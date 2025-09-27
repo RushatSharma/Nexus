@@ -55,8 +55,8 @@ export function ContactPage() {
 
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-slate-900">
-            <Header isContactPage={true} />
+        <div className="flex flex-col min-h-screen bg-background">
+            <Header/>
             <main className="flex-grow container mx-auto px-4 py-12 lg:py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
                     <div className="text-left">
@@ -66,12 +66,12 @@ export function ContactPage() {
                             className="justify-start p-0 m-0"
                             textClassName="-ml-1"
                         />
-                        <p className="text-lg text-gray-600 dark:text-gray-300 mt-6 mb-6">
+                        <p className="text-lg text-muted-foreground mt-6 mb-6">
                             Have a project in mind, or just want to explore possibilities?
                             We're here to help you navigate the digital landscape and achieve
                             your goals.
                         </p>
-                        <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                        <p className="text-lg text-muted-foreground mb-8">
                             Whether you're looking to boost your brand's visibility, drive
                             more traffic, or increase conversions, our team is ready to
                             build a strategy that works for you. Let's discuss your:
@@ -88,7 +88,7 @@ export function ContactPage() {
                                 </div>
                                 <a
                                     href="tel:+1234567890"
-                                    className="text-lg text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"
+                                    className="text-lg text-foreground hover:text-primary transition-colors"
                                 >
                                     +91 15534 45353
                                 </a>
@@ -99,7 +99,7 @@ export function ContactPage() {
                                 </div>
                                 <a
                                     href="mailto:hello@nexus.com"
-                                    className="text-lg text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"
+                                    className="text-lg text-foreground hover:text-primary transition-colors"
                                 >
                                     hello@nexus.com
                                 </a>
@@ -108,14 +108,14 @@ export function ContactPage() {
                                 <div className="bg-primary/10 text-primary p-2 rounded-full">
                                     <MapPin className="w-5 h-5" />
                                 </div>
-                                <p className="text-lg text-gray-700 dark:text-gray-200">
+                                <p className="text-lg text-foreground">
                                     Nagpur,Maharashtra
                                 </p>
                             </div>
                         </div>
                     </div>
                     <div>
-                        <Card className="border-gray-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+                        <Card className="border-border bg-card/80 backdrop-blur-sm">
                             <CardHeader>
                                 <CardTitle className="text-2xl">Get a Free Quote</CardTitle>
                                 <CardDescription className="text-base">
@@ -158,9 +158,9 @@ export function ContactPage() {
                                             rows={1} // start with one row
                                         />
                                     </div>
-                                    {error && <p className="text-sm text-red-500">{error}</p>}
+                                    {error && <p className="text-sm text-destructive">{error}</p>}
                                     {success && (
-                                        <div className="flex items-center text-sm text-green-600">
+                                        <div className="flex items-center text-sm text-success">
                                             <CheckCircle className="w-4 h-4 mr-2"/>
                                             Message sent successfully! We'll get back to you soon.
                                         </div>

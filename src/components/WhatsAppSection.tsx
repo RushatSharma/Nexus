@@ -2,11 +2,11 @@ import React, {
   useRef,
   useEffect,
   useState,
-  TouchEvent,
 } from "react";
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "../hooks/use-mobile";
+import { useDrag } from '@use-gesture/react';
 
 export interface ThreeDCarouselItem {
   id: number;
@@ -72,8 +72,6 @@ const ThreeDCarousel = ({
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const isMobile = useIsMobile();
   const minSwipeDistance = 50;
 
@@ -83,13 +81,14 @@ const ThreeDCarousel = ({
       { threshold: 0.1 }
     );
 
-    if (carouselRef.current) {
-      observer.observe(carouselRef.current);
+    const currentRef = carouselRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (carouselRef.current) {
-        observer.unobserve(carouselRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);
@@ -103,24 +102,12 @@ const ThreeDCarousel = ({
     }
   }, [isInView, isHovering, autoRotate, rotateInterval, items.length]);
 
-  const onTouchStart = (e: TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
-    setTouchEnd(null);
-  };
-
-  const onTouchMove = (e: TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    if (distance > minSwipeDistance) {
-      setActive((prev) => (prev + 1) % items.length);
-    } else if (distance < -minSwipeDistance) {
-      setActive((prev) => (prev - 1 + items.length) % items.length);
+  const bind = useDrag(({ active: dragging, movement: [mx], direction: [xDir], cancel }) => {
+    if (dragging && Math.abs(mx) > minSwipeDistance) {
+      setActive(prev => (prev + (xDir > 0 ? -1 : 1) + items.length) % items.length);
+      cancel();
     }
-  };
+  });
 
   const getCardAnimationClass = (index: number) => {
     if (index === active) return "scale-100 opacity-100 z-20";
@@ -132,13 +119,13 @@ const ThreeDCarousel = ({
   };
 
   return (
-    <section className="bg-gray-50 py-10 sm:py-10 w-full">
+    <section className="bg-background py-10 sm:py-10 w-full">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
             How We Work
           </h2>
-          <p className="mt-4 text-lg text-gray-600 md:text-xl">
+          <p className="mt-4 text-lg text-muted-foreground md:text-xl">
             A proven path to digital marketing success, tailored to your business.
           </p>
         </div>
@@ -146,10 +133,9 @@ const ThreeDCarousel = ({
           className="relative overflow-hidden h-[500px]"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
+          {...bind()}
           ref={carouselRef}
+          style={{ touchAction: 'pan-y' }}
         >
           <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
             {items.map((item, index) => (
@@ -159,7 +145,7 @@ const ThreeDCarousel = ({
                   index
                 )}`}
               >
-                <Card className="overflow-hidden bg-white h-[450px] border shadow-lg flex flex-col">
+                <Card className="overflow-hidden bg-background h-[450px] border shadow-lg flex flex-col">
                   <div
                     className="relative bg-black p-6 flex items-center justify-center h-48 overflow-hidden"
                     style={{
@@ -171,22 +157,22 @@ const ThreeDCarousel = ({
                     <div className="absolute inset-0 bg-black/60" />
                     <div className="relative z-10 text-center text-white">
                       <h3 className="text-3xl font-bold mb-2">{item.step}</h3>
-                      <div className="w-12 h-1 bg-orange-500 mx-auto mb-2" />
+                      <div className="w-12 h-1 bg-primary mx-auto mb-2" />
                       <p className="text-base">{item.title}</p>
                     </div>
                   </div>
                   <CardContent className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-2xl font-bold mb-2 text-gray-900">
+                    <h3 className="text-2xl font-bold mb-2 text-foreground">
                       {item.title}
                     </h3>
-                    <p className="text-base text-gray-600 flex-grow mb-4">
+                    <p className="text-base text-muted-foreground flex-grow mb-4">
                       {item.description}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {item.tags.map((tag, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium"
+                          className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm font-medium"
                         >
                           {tag}
                         </span>
@@ -200,7 +186,7 @@ const ThreeDCarousel = ({
           {!isMobile && (
             <>
               <button
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 z-30 shadow-md transition-all hover:scale-110"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground hover:bg-primary/90 z-30 shadow-md transition-all hover:scale-110"
                 onClick={() =>
                   setActive((prev) => (prev - 1 + items.length) % items.length)
                 }
@@ -209,7 +195,7 @@ const ThreeDCarousel = ({
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 z-30 shadow-md transition-all hover:scale-110"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground hover:bg-primary/90 z-30 shadow-md transition-all hover:scale-110"
                 onClick={() => setActive((prev) => (prev + 1) % items.length)}
                 aria-label="Next"
               >
@@ -223,8 +209,8 @@ const ThreeDCarousel = ({
                 key={idx}
                 className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                   active === idx
-                    ? "bg-orange-500 w-6"
-                    : "bg-gray-300 hover:bg-gray-400"
+                    ? "bg-primary w-6"
+                    : "bg-muted hover:bg-muted-foreground"
                 }`}
                 onClick={() => setActive(idx)}
                 aria-label={`Go to item ${idx + 1}`}
