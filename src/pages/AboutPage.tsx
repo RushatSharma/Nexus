@@ -1,12 +1,30 @@
+import { useState, useEffect } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Zap, Lightbulb, Users, ShieldCheck, ArrowRight, TrendingUp, UsersRound, Award, Megaphone } from "lucide-react";
 import teamMember1 from "@/assets/hero-woman.jpg";
 import logoSymbol from "@/assets/LogoAbout.png";
+import logoWhite from "@/assets/LogoWhite.png"; // Import the white logo
 import contactIllustration from "@/assets/contact-illustration.png";
 
 const AboutPage = () => {
+  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
+
   const teamMembers = [
     { name: "Jane Doe", role: "Founder & CEO", avatar: teamMember1 },
     { name: "John Smith", role: "Head of Marketing", avatar: "https://i.pravatar.cc/150?img=60" },
@@ -50,7 +68,7 @@ const AboutPage = () => {
           <div className="container-custom flex flex-col items-center text-center">
             
             <img
-              src={logoSymbol}
+              src={isDarkMode ? logoWhite : logoSymbol}
               alt="Nexus Logo Symbol"
               className="w-[150px] h-[150px] mb-0 animate-spin-slow"
             />
@@ -95,7 +113,7 @@ const AboutPage = () => {
         </section>
 
         {/* --- Journey Section --- */}
-        <section className="py-20 bg-background">
+        <section className="py-15 bg-background">
           <div className="container-custom space-y-16">
             <div className="text-center max-w-3xl mx-auto">
               <h3 className="text-primary font-semibold">Our Journey</h3>
@@ -130,7 +148,7 @@ const AboutPage = () => {
         </section>
 
         {/* --- Team Section --- */}
-        <section className="py-16 bg-background text-center">
+        <section className="py-15 bg-background text-center">
           <div className="container-custom">
             <h3 className="text-primary font-semibold">Our Team</h3>
             <h2 className="mt-2 text-3xl lg:text-4xl font-bold text-foreground">Meet Our Dedicated Team</h2>
@@ -156,7 +174,7 @@ const AboutPage = () => {
         </section>
         
         {/* --- Values Section --- */}
-        <section className="py-20 bg-background">
+        <section className="py-15 bg-background">
             <div className="container-custom">
             <div className="text-center max-w-3xl mx-auto">
               <h3 className="text-primary font-semibold">Our Mission and Values</h3>
@@ -180,7 +198,7 @@ const AboutPage = () => {
             </div>
         </section>
 
-         {/* --- CTA Section: FULLY RESPONSIVE --- */}
+          {/* --- CTA Section: FULLY RESPONSIVE --- */}
         <section className="py-16">
             <div className="container-custom">
                 <div className="relative rounded-3xl p-8 md:p-12 lg:p-10 overflow-hidden bg-primary">

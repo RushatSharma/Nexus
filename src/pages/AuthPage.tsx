@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import AuthIllustration from "@/assets/Auth.png";
+import AuthIllustrationWhite from "@/assets/AuthWhite.png"; // Import the white illustration
 import NexusLogo from "@/assets/Logo.png";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
@@ -45,6 +46,7 @@ const AuthHeader = () => (
 );
 
 export function AuthPage() {
+  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
   const [signupName, setSignupName] = useState("");
   const [signupOrg, setSignupOrg] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
@@ -57,6 +59,20 @@ export function AuthPage() {
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
+  
   const [alert, setAlert] = useState<{
     type: "success" | "destructive";
     message: string;
@@ -155,7 +171,7 @@ export function AuthPage() {
         {/* Left Column */}
         <div className="hidden lg:flex flex-col items-center justify-center p-12 bg-secondary">
           <div className="text-center space-y-8">
-            <img src={AuthIllustration} alt="Marketing Illustration" className="w-full max-w-sm mx-auto" />
+            <img src={isDarkMode ? AuthIllustrationWhite : AuthIllustration} alt="Marketing Illustration" className="w-full max-w-sm mx-auto" />
             <h1 className="text-4xl font-bold leading-tight text-foreground">
               Unlock Your Brand's Potential
             </h1>
@@ -178,7 +194,7 @@ export function AuthPage() {
         </div>
 
         {/* Right Column */}
-      <div className="flex flex-col items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:p-8 bg-background">
+        <div className="flex flex-col items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:p-8 bg-background">
           <div className="w-full max-w-md">
             <div className="text-center mb-6">
               <h2 className="text-3xl font-bold tracking-tight text-foreground">Access Your Account</h2>
