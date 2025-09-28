@@ -1,22 +1,37 @@
 import React, { useState, useEffect } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "../firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom"; // Import NavLink
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Menu, // Import Menu
+  Moon, // Import Moon
+  Sun, // Import Sun
+  X, // Import X
+} from "lucide-react";
 import AuthIllustration from "@/assets/Auth.png";
 import AuthIllustrationWhite from "@/assets/AuthWhite.png"; // Import the white illustration
 import NexusLogo from "@/assets/Logo.png";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils"; // Import cn
 
 const OrDivider = () => (
   <div className="flex items-center my-2">
     <div className="flex-grow border-t border-border"></div>
-    <span className="mx-4 text-xs font-medium text-muted-foreground uppercase">OR</span>
+    <span className="mx-4 text-xs font-medium text-muted-foreground uppercase">
+      OR
+    </span>
     <div className="flex-grow border-t border-border"></div>
   </div>
 );
@@ -28,25 +43,119 @@ const SocialLogins = () => (
   </div>
 );
 
-const AuthHeader = () => (
-  <header className="absolute top-0 left-0 right-0 p-4 bg-transparent z-20">
-    <div className="container-custom flex justify-between items-center">
-      <Link to="/" className="flex items-center space-x-2">
-        <img src={NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
-        <span className="text-xl font-bold text-foreground">NEXUS</span>
-      </Link>
-      <Link to="/" className="hidden sm:flex">
-        <Button variant="outline" className="btn-outline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
-        </Button>
-      </Link>
-    </div>
-  </header>
-);
+const AuthHeader = ({ isDarkMode, toggleTheme }: { isDarkMode: boolean; toggleTheme: () => void }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigation = [
+    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
+    { name: "Projects", href: "/projects" },
+    { name: "Contact Us", href: "/contact" },
+  ];
 
+  return (
+    <header className="absolute top-0 left-0 right-0 p-4 bg-transparent z-20">
+      <div className="container-custom flex justify-between items-center">
+        <Link to="/" className="flex items-center space-x-2">
+          <img src={NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
+          <span className="text-xl font-bold text-foreground">NEXUS</span>
+        </Link>
+        {/* Center: Navigation (Desktop) */}
+        <nav className="hidden lg:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 items-center space-x-8">
+          {navigation.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.href}
+              className={({ isActive }) =>
+                cn(
+                  "font-medium text-foreground transition-colors hover:text-primary py-2 relative",
+                  "after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-0 after:bg-primary after:transition-transform after:duration-300",
+                  isActive && "text-primary after:scale-x-100"
+                )
+              }
+            >
+              {item.name}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="hidden lg:flex items-center space-x-2">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-md bg-secondary hover:bg-muted transition-colors"
+            aria-label="Toggle Theme"
+          >
+            {isDarkMode ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
+          </button>
+          <Link to="/" className="hidden sm:flex">
+            <Button variant="outline" className="btn-outline">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden">
+          <button
+            className="p-2 rounded-md text-foreground"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+      </div>
+      {/* Mobile Menu Content */}
+      {isMenuOpen && (
+        <div className="absolute left-0 w-full lg:hidden bg-background/95 backdrop-blur-sm p-4 border-t border-border shadow-md">
+          <nav className="flex flex-col space-y-3">
+            {navigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) =>
+                  cn(
+                    "text-foreground hover:text-primary px-3 py-2 rounded-md",
+                    isActive && "bg-secondary text-primary font-semibold"
+                  )
+                }
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.name}
+              </NavLink>
+            ))}
+            <div className="pt-3 border-t border-border flex flex-col gap-3">
+              <div className="px-3 pt-2">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={toggleTheme}
+                >
+                  {isDarkMode ? (
+                    <Sun className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Moon className="w-4 h-4 mr-2" />
+                  )}
+                  Toggle Theme
+                </Button>
+              </div>
+            </div>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+};
 export function AuthPage() {
-  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+  const [isDarkMode, setIsDarkMode] = useState(
+    document.documentElement.classList.contains("dark")
+  );
   const [signupName, setSignupName] = useState("");
   const [signupOrg, setSignupOrg] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
@@ -59,11 +168,23 @@ export function AuthPage() {
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const navigate = useNavigate();
 
+  const toggleTheme = () => {
+    setIsDarkMode((prevMode) => {
+      const newMode = !prevMode;
+      if (newMode) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      return newMode;
+    });
+  };
+
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        if (mutation.attributeName === "class") {
+          setIsDarkMode(document.documentElement.classList.contains("dark"));
         }
       });
     });
@@ -72,18 +193,22 @@ export function AuthPage() {
 
     return () => observer.disconnect();
   }, []);
-  
+
   const [alert, setAlert] = useState<{
     type: "success" | "destructive";
     message: string;
   } | null>(null);
 
-  const showAlert = (type: "success" | "destructive", message: string, redirect = false) => {
+  const showAlert = (
+    type: "success" | "destructive",
+    message: string,
+    redirect = false
+  ) => {
     setAlert({ type, message });
     if (redirect) {
       setTimeout(() => {
         setAlert(null);
-        navigate('/');
+        navigate("/");
       }, 1500);
     } else {
       setTimeout(() => setAlert(null), 4000);
@@ -92,30 +217,30 @@ export function AuthPage() {
 
   const handleSignup = async () => {
     if (!signupEmail || !signupPassword || !signupName) {
-        showAlert("destructive", "Please fill in all required fields.");
-        return;
+      showAlert("destructive", "Please fill in all required fields.");
+      return;
     }
     setSignupLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
       showAlert("success", "Account created successfully! Redirecting...", true);
     } catch (error: any) {
-        let message = "An unknown error occurred.";
-        switch (error.code) {
-            case 'auth/email-already-in-use':
-                message = "An account with this email already exists. Please log in.";
-                break;
-            case 'auth/weak-password':
-                message = "Password should be at least 6 characters long.";
-                break;
-            case 'auth/invalid-email':
-                message = "Please enter a valid email address.";
-                break;
-            case 'auth/network-request-failed':
-                message = "Network error. Please check your connection and try again.";
-                break;
-        }
-        showAlert("destructive", message);
+      let message = "An unknown error occurred.";
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          message = "An account with this email already exists. Please log in.";
+          break;
+        case "auth/weak-password":
+          message = "Password should be at least 6 characters long.";
+          break;
+        case "auth/invalid-email":
+          message = "Please enter a valid email address.";
+          break;
+        case "auth/network-request-failed":
+          message = "Network error. Please check your connection and try again.";
+          break;
+      }
+      showAlert("destructive", message);
     } finally {
       setSignupLoading(false);
     }
@@ -123,31 +248,31 @@ export function AuthPage() {
 
   const handleLogin = async () => {
     if (!loginEmail || !loginPassword) {
-        showAlert("destructive", "Please fill in both email and password.");
-        return;
+      showAlert("destructive", "Please fill in both email and password.");
+      return;
     }
     setLoginLoading(true);
     try {
       await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
       showAlert("success", "Logged in successfully! Redirecting...", true);
     } catch (error: any) {
-        let message = "An unknown error occurred.";
-        switch (error.code) {
-            case 'auth/invalid-credential':
-            case 'auth/wrong-password':
-                message = "Incorrect email or password. Please try again.";
-                break;
-            case 'auth/user-not-found':
-                message = "No account found with this email. Please sign up.";
-                break;
-            case 'auth/invalid-email':
-                message = "Please enter a valid email address.";
-                break;
-            case 'auth/network-request-failed':
-                message = "Network error. Please check your connection and try again.";
-                break;
-        }
-        showAlert("destructive", message);
+      let message = "An unknown error occurred.";
+      switch (error.code) {
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+          message = "Incorrect email or password. Please try again.";
+          break;
+        case "auth/user-not-found":
+          message = "No account found with this email. Please sign up.";
+          break;
+        case "auth/invalid-email":
+          message = "Please enter a valid email address.";
+          break;
+        case "auth/network-request-failed":
+          message = "Network error. Please check your connection and try again.";
+          break;
+      }
+      showAlert("destructive", message);
     } finally {
       setLoginLoading(false);
     }
@@ -155,38 +280,53 @@ export function AuthPage() {
 
   return (
     <>
-      <AuthHeader />
-      
+      <AuthHeader isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+
       {/* Alert Section - Positioned as an overlay */}
       <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
         {alert && (
-            <Alert variant={alert.type} withIcon dismissible onDismiss={() => setAlert(null)} className="shadow-lg backdrop-blur-sm">
-                <AlertTitle>{alert.type === "success" ? "Success" : "Error"}</AlertTitle>
-                <AlertDescription>{alert.message}</AlertDescription>
-            </Alert>
+          <Alert
+            variant={alert.type}
+            withIcon
+            dismissible
+            onDismiss={() => setAlert(null)}
+            className="shadow-lg backdrop-blur-sm"
+          >
+            <AlertTitle>
+              {alert.type === "success" ? "Success" : "Error"}
+            </AlertTitle>
+            <AlertDescription>{alert.message}</AlertDescription>
+          </Alert>
         )}
       </div>
 
       <div className="w-full min-h-screen lg:grid lg:grid-cols-2">
         {/* Left Column */}
-        <div className="hidden lg:flex flex-col items-center justify-center p-12 bg-secondary">
+        <div className="hidden lg:flex flex-col items-center justify-center p-12 bg-background">
           <div className="text-center space-y-8">
-            <img src={isDarkMode ? AuthIllustrationWhite : AuthIllustration} alt="Marketing Illustration" className="w-full max-w-sm mx-auto" />
+            <img
+              src={isDarkMode ? AuthIllustrationWhite : AuthIllustration}
+              alt="Marketing Illustration"
+              className="w-full max-w-sm mx-auto"
+            />
             <h1 className="text-4xl font-bold leading-tight text-foreground">
               Unlock Your Brand's Potential
             </h1>
             <div className="text-left max-w-md mx-auto space-y-4">
               <p className="text-lg text-muted-foreground">
-                Join a community of forward-thinking brands and gain access to tools that will elevate your marketing game.
+                Join a community of forward-thinking brands and gain access to
+                tools that will elevate your marketing game.
               </p>
               <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start">
                   <CheckCircle2 className="w-5 h-5 mr-2 mt-1 text-primary flex-shrink-0" />
-                  Access data-driven insights and analytics to fuel your growth.
+                  Access data-driven insights and analytics to fuel your
+                  growth.
                 </li>
                 <li className="flex items-start">
                   <CheckCircle2 className="w-5 h-5 mr-2 mt-1 text-primary flex-shrink-0" />
-                  Collaborate with our experts to unlock your brand's creative potential.
+                  Collaborate with our experts to unlock your brand's creative
+                  potential.
                 </li>
               </ul>
             </div>
@@ -197,8 +337,12 @@ export function AuthPage() {
         <div className="flex flex-col items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:p-8 bg-background">
           <div className="w-full max-w-md">
             <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold tracking-tight text-foreground">Access Your Account</h2>
-              <p className="mt-2 text-muted-foreground">Welcome! Please enter your details.</p>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground">
+                Access Your Account
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                Welcome! Please enter your details.
+              </p>
             </div>
 
             <Tabs defaultValue="login" className="w-full">
@@ -224,7 +368,10 @@ export function AuthPage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="login-password">Password</Label>
-                        <Link to="#" className="text-sm font-medium text-primary hover:underline">
+                        <Link
+                          to="#"
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
                           Forgot password?
                         </Link>
                       </div>
@@ -238,13 +385,23 @@ export function AuthPage() {
                         <button
                           type="button"
                           className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          onClick={() =>
+                            setShowLoginPassword(!showLoginPassword)
+                          }
                         >
-                          {showLoginPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          {showLoginPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
                         </button>
                       </div>
                     </div>
-                    <Button className="w-full btn-primary" onClick={handleLogin} disabled={loginLoading}>
+                    <Button
+                      className="w-full btn-primary"
+                      onClick={handleLogin}
+                      disabled={loginLoading}
+                    >
                       {loginLoading ? "Logging in..." : "Login"}
                     </Button>
                     <OrDivider />
@@ -267,7 +424,9 @@ export function AuthPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-org">Organization Name (Optional)</Label>
+                      <Label htmlFor="signup-org">
+                        Organization Name (Optional)
+                      </Label>
                       <Input
                         id="signup-org"
                         placeholder="Acme Inc."
@@ -297,14 +456,24 @@ export function AuthPage() {
                         <button
                           type="button"
                           className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-                          onClick={() => setShowSignupPassword(!showSignupPassword)}
+                          onClick={() =>
+                            setShowSignupPassword(!showSignupPassword)
+                          }
                         >
-                          {showSignupPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          {showSignupPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
                         </button>
                       </div>
                     </div>
                     <div className="pt-2">
-                      <Button className="w-full btn-primary" onClick={handleSignup} disabled={signupLoading}>
+                      <Button
+                        className="w-full btn-primary"
+                        onClick={handleSignup}
+                        disabled={signupLoading}
+                      >
                         {signupLoading ? "Creating..." : "Create Account"}
                       </Button>
                     </div>

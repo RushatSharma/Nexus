@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
-import heroImage from '@/assets/megaphone-illustration.png';
+import heroImage from '@/assets/Hero.png';
 import { Link } from 'react-router-dom';
 import { AuroraTextEffect } from './AuroraTextEffect'; // Make sure this path is correct
 
@@ -69,7 +69,7 @@ const Hero = () => {
           </div>
           
           {/* Right Content (Image) */}
-          <div className="relative flex justify-center lg:justify-end lg:col-span-5">
+           <div className="relative flex justify-center lg:justify-end lg:w-[950%] lg:-mt-20 lg:translate-x-0">
             <img
               src={heroImage}
               alt="Digital Marketing Illustration"
