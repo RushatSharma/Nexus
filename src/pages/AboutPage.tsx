@@ -137,7 +137,7 @@ const AboutPage = () => {
             <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
               Our success is built upon the expertise, dedication, and collaborative spirit of our talented team. Meet the individuals who bring passion and professionalism to every project.
             </p>
-            <div className="mt-12 bg-secondary p-8 rounded-3xl">
+            <div className="mt-12 bg-muted p-8 rounded-3xl shadow-lg">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-8 gap-y-12">
                 {teamMembers.map((member, index) => (
                   <div key={index} className="group text-center">
@@ -167,7 +167,7 @@ const AboutPage = () => {
             </div>
             <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {values.map((value) => (
-                <div key={value.title} className="bg-secondary p-8 rounded-2xl shadow-lg">
+                <div key={value.title} className="bg-muted p-8 rounded-2xl shadow-lg">
                   <div className="flex-shrink-0">{value.icon}</div>
                   <h3 className="mt-6 text-xl font-bold text-foreground">{value.title}</h3>
                   <p className="mt-2 text-muted-foreground">{value.description}</p>
@@ -183,24 +183,23 @@ const AboutPage = () => {
          {/* --- CTA Section: FULLY RESPONSIVE --- */}
         <section className="py-16">
             <div className="container-custom">
-                <div className="relative rounded-3xl p-8 md:p-12 lg:p-16 overflow-hidden bg-gradient-to-r from-success to-primary">
+                <div className="relative rounded-3xl p-8 md:p-12 lg:p-10 overflow-hidden bg-primary">
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <div className="relative z-10 text-white text-center md:text-left">
                             <h2 className="text-3xl md:text-4xl font-bold">Empowering Your Vision: Request a Quote</h2>
                             <p className="mt-4 text-lg">
-                            Ready to bring your vision to life? Requesting a quote from Nexus is the first step towards turning your dreams into reality. Our team of experts is standing by to provide you with a personalized estimate tailored to your project's needs.
+                            Ready to bring your vision to life? Requesting a quote from Nexus is the first step towards turning your dreams into reality. Whether you're launching a new brand, aiming to increase your market reach, or looking to optimize your digital presence, our team of experts is standing by to provide you with a personalized estimate tailored to your project's needs. Let's build something amazing together.
                             </p>
                             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                                 <Button size="lg" className="bg-background text-foreground hover:bg-background/90">Request Quote <ArrowRight className="w-4 h-4 ml-2" /></Button>
-                                <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/20">Learn More</Button>
+                                <Button size="lg" variant="outline" className="text-foreground  hover:bg-white/20">Learn More</Button>
                             </div>
                         </div>
                         <div className="relative mt-8 md:mt-0 flex justify-center md:justify-end">
-                            {/* The image is now conditionally positioned */}
                             <img 
                                 src={contactIllustration} 
                                 alt="Empowering your vision" 
-                                className="w-full max-w-xs sm:max-w-sm md:absolute md:-right-8 md:-bottom-20 md:max-w-md lg:max-w-lg object-contain"
+                                className="w-full max-w-xs sm:max-w-sm md:max-w-md object-contain"
                             />
                         </div>
                     </div>

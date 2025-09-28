@@ -13,10 +13,10 @@ All colors MUST be HSL.
     --background: 36 100% 98%; /* #FFFBF5 */
     --foreground: 0 0% 0%; /* #000000 */
 
-    --card: 0 0% 96%; /* #F5F5F5 - Pearl White */
+    --card: 36 100% 98%; /* #F5F5F5 - Pearl White */
     --card-foreground: 0 0% 0%; /* #000000 */
 
-    --popover: 0 0% 96%; /* #F5F5F5 - Pearl White */
+    --popover: 36 100% 98%; /* #F5F5F5 - Pearl White */
     --popover-foreground: 0 0% 0%; /* #000000 */
 
     /* Brand Colors */

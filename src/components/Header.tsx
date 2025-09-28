@@ -1,16 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Sun, Moon, LogOut } from 'lucide-react';
-import NexusLogo from '@/assets/Logo.png';
-import { useAuth } from '@/contexts/AuthContext';
-import { auth, db } from '@/firebase';
+import NexusLogo from '../assets/Logo.png';
+import { useAuth } from '../contexts/AuthContext';
+import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from './ui/separator';
-import { cn } from '@/lib/utils';
+import { cn } from '../lib/utils';
 
 interface Message {
     id: string;
@@ -97,7 +97,10 @@ const ProfileButton = () => {
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark';
+  });
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
 
@@ -108,14 +111,18 @@ const Header: React.FC = () => {
     { name: 'Contact Us', href: '/contact' },
   ];
 
-  const toggleTheme = () => {
-    const newIsDarkMode = !isDarkMode;
-    setIsDarkMode(newIsDarkMode);
-    if (newIsDarkMode) {
+  useEffect(() => {
+    if (isDarkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(prevMode => !prevMode);
   };
 
   const handleLogout = async () => {
@@ -189,7 +196,7 @@ const Header: React.FC = () => {
 
         {/* Mobile Menu Content */}
         {isMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border">
+          <div className="absolute left-0 w-full lg:hidden bg-background/95 backdrop-blur-sm p-4 border-t border-border shadow-md">
             <nav className="flex flex-col space-y-3">
               {navigation.map((item) => (
                 <NavLink
@@ -238,4 +245,3 @@ const Header: React.FC = () => {
 };
 
 export default Header;
-

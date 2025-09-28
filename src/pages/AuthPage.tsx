@@ -178,7 +178,7 @@ export function AuthPage() {
         </div>
 
         {/* Right Column */}
-        <div className="flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
+      <div className="flex flex-col items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:p-8 bg-background">
           <div className="w-full max-w-md">
             <div className="text-center mb-6">
               <h2 className="text-3xl font-bold tracking-tight text-foreground">Access Your Account</h2>
