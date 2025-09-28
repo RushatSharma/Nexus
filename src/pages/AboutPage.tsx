@@ -148,7 +148,8 @@ const AboutPage = () => {
         </section>
 
         {/* --- Team Section --- */}
-        <section className="py-15 bg-background text-center">
+        <section className="pt-20 pb-15 bg-background text-center lg:pt-15">
+
           <div className="container-custom">
             <h3 className="text-primary font-semibold">Our Team</h3>
             <h2 className="mt-2 text-3xl lg:text-4xl font-bold text-foreground">Meet Our Dedicated Team</h2>
