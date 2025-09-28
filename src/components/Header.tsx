@@ -66,21 +66,21 @@ const ProfileButton = () => {
                         </Avatar>
                         <div>
                             <p className="font-semibold">{userData?.name}</p>
-                            <p className="text-sm text-gray-500">{currentUser?.email}</p>
+                            <p className="text-sm text-muted-foreground">{currentUser?.email}</p>
                         </div>
                     </div>
                     <Separator />
                     <div>
                         <h4 className="text-sm font-semibold mb-2">Message History</h4>
                         <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {loadingMessages ? <p className="text-sm text-gray-500">Loading messages...</p> : 
+                            {loadingMessages ? <p className="text-sm text-muted-foreground">Loading messages...</p> : 
                                 messages.length > 0 ? messages.map(msg => (
-                                    <div key={msg.id} className="text-sm p-2 bg-gray-50 dark:bg-slate-800 rounded-md">
+                                    <div key={msg.id} className="text-sm p-2 bg-secondary rounded-md">
                                         <p className="font-semibold capitalize">{msg.service}</p>
-                                        <p className="text-gray-600 dark:text-gray-300 truncate">{msg.message}</p>
-                                        <p className="text-xs text-gray-400 capitalize">Status: {msg.status}</p>
+                                        <p className="text-muted-foreground truncate">{msg.message}</p>
+                                        <p className="text-xs text-muted-foreground/70 capitalize">Status: {msg.status}</p>
                                     </div>
-                                )) : <p className="text-sm text-gray-500">No messages sent yet.</p>
+                                )) : <p className="text-sm text-muted-foreground">No messages sent yet.</p>
                             }
                         </div>
                     </div>
@@ -97,7 +97,7 @@ const ProfileButton = () => {
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
 
@@ -109,8 +109,13 @@ const Header: React.FC = () => {
   ];
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    const newIsDarkMode = !isDarkMode;
+    setIsDarkMode(newIsDarkMode);
+    if (newIsDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
   const handleLogout = async () => {
@@ -119,7 +124,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-background/95 backdrop-blur-sm dark:bg-slate-900/95 dark:border-slate-800 border-b border-border sticky top-0 z-50">
+    <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="container-custom">
         <div className="relative flex items-center justify-between h-16 lg:h-20">
           
@@ -154,7 +159,7 @@ const Header: React.FC = () => {
           <div className="hidden lg:flex flex-1 justify-end items-center space-x-4">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
+              className="p-2 rounded-md bg-secondary hover:bg-muted transition-colors"
               aria-label="Toggle Theme"
             >
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -233,3 +238,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+

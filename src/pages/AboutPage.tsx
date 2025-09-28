@@ -46,7 +46,7 @@ const AboutPage = () => {
       <Header />
       <main className="flex-grow">
         {/* --- Hero Section --- */}
-        <section className="pt-10 lg:pt-2 pb-20 lg:pb-24 bg-background dark:bg-slate-900/50">
+        <section className="pt-10 lg:pt-2 pb-20 lg:pb-24 bg-background">
           <div className="container-custom flex flex-col items-center text-center">
             
             <img
@@ -130,14 +130,14 @@ const AboutPage = () => {
         </section>
 
         {/* --- Team Section --- */}
-        <section className="py-16 bg-secondary text-center">
+        <section className="py-16 bg-background text-center">
           <div className="container-custom">
             <h3 className="text-primary font-semibold">Our Team</h3>
             <h2 className="mt-2 text-3xl lg:text-4xl font-bold text-foreground">Meet Our Dedicated Team</h2>
             <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
               Our success is built upon the expertise, dedication, and collaborative spirit of our talented team. Meet the individuals who bring passion and professionalism to every project.
             </p>
-            <div className="mt-12 bg-background/50 p-8 rounded-3xl">
+            <div className="mt-12 bg-secondary p-8 rounded-3xl">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-8 gap-y-12">
                 {teamMembers.map((member, index) => (
                   <div key={index} className="group text-center">
@@ -156,7 +156,7 @@ const AboutPage = () => {
         </section>
         
         {/* --- Values Section --- */}
-        <section className="py-20 bg-secondary">
+        <section className="py-20 bg-background">
             <div className="container-custom">
             <div className="text-center max-w-3xl mx-auto">
               <h3 className="text-primary font-semibold">Our Mission and Values</h3>
@@ -167,7 +167,7 @@ const AboutPage = () => {
             </div>
             <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {values.map((value) => (
-                <div key={value.title} className="bg-background p-8 rounded-2xl shadow-lg">
+                <div key={value.title} className="bg-secondary p-8 rounded-2xl shadow-lg">
                   <div className="flex-shrink-0">{value.icon}</div>
                   <h3 className="mt-6 text-xl font-bold text-foreground">{value.title}</h3>
                   <p className="mt-2 text-muted-foreground">{value.description}</p>

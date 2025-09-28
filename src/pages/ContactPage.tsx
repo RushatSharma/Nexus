@@ -115,7 +115,7 @@ export function ContactPage() {
                         </div>
                     </div>
                     <div>
-                        <Card className="border-border bg-card/80 backdrop-blur-sm">
+                        <Card className="border-border bg-secondary">
                             <CardHeader>
                                 <CardTitle className="text-2xl">Get a Free Quote</CardTitle>
                                 <CardDescription className="text-base">

@@ -13,10 +13,10 @@ All colors MUST be HSL.
     --background: 36 100% 98%; /* #FFFBF5 */
     --foreground: 0 0% 0%; /* #000000 */
 
-    --card: 36 100% 98%; /* #FFFBF5 */
+    --card: 0 0% 96%; /* #F5F5F5 - Pearl White */
     --card-foreground: 0 0% 0%; /* #000000 */
 
-    --popover: 36 100% 98%; /* #FFFBF5 */
+    --popover: 0 0% 96%; /* #F5F5F5 - Pearl White */
     --popover-foreground: 0 0% 0%; /* #000000 */
 
     /* Brand Colors */
@@ -41,10 +41,16 @@ All colors MUST be HSL.
     --input: 33 33% 91%; /* #EAE0D5 */
     --ring: 348 89% 41%; /* #ca0b32 */
 
-    /* Dark theme colors (unchanged) */
-    --dark-bg: 220 27% 8%;
-    --dark-card: 220 27% 12%;
-    --dark-foreground: 0 0% 98%;
+    /* Special variables for the inverted pricing card */
+    --basic-card-bg: hsl(var(--foreground));
+    --basic-card-fg: hsl(var(--background));
+    --basic-card-muted-fg: hsl(var(--background) / 0.7);
+    --basic-card-check: hsl(var(--success));
+
+    /* Dark theme colors */
+    --dark-bg: 0 0% 0%; /* #000000 */
+    --dark-card: 0 0% 4%; /* #0A0A0A */
+    --dark-foreground: 0 0% 98%; /* #FAFAFA */
 
     /* Success and Info colors */
     --success: 122 48% 34%; /* #2E7D32 */
@@ -76,23 +82,23 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 27% 8%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 0%; /* #000000 */
+    --foreground: 0 0% 98%; /* #FAFAFA */
 
-    --card: 220 27% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 4%; /* #0A0A0A */
+    --card-foreground: 0 0% 98%; /* #FAFAFA */
 
-    --popover: 220 27% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 4%; /* #0A0A0A */
+    --popover-foreground: 0 0% 98%; /* #FAFAFA */
 
     --primary: 348 89% 41%; /* #ca0b32 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 27% 16%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 8%; /* #141414 */
+    --secondary-foreground: 0 0% 98%; /* #FAFAFA */
 
-    --muted: 220 27% 16%;
-    --muted-foreground: 220 9% 65%;
+    --muted: 0 0% 8%; /* #141414 */
+    --muted-foreground: 0 0% 63%; /* #A1A1A1 */
 
     --accent: 348 89% 41%; /* #ca0b32 */
     --accent-foreground: 0 0% 100%;
@@ -100,9 +106,15 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 27% 16%;
-    --input: 220 27% 16%;
+    --border: 0 0% 12%; /* #1F1F1F */
+    --input: 0 0% 12%; /* #1F1F1F */
     --ring: 348 89% 41%; /* #ca0b32 */
+
+    /* Inverted pricing card variables for dark mode */
+    --basic-card-bg: 36 100% 98%; /* The light theme's cream background */
+    --basic-card-fg: 0 0% 0%; /* The light theme's black foreground */
+    --basic-card-muted-fg: 0 0% 25%;
+    --basic-card-check: 0 0% 0%; /* Black checkmarks */
   }
 }
 
@@ -154,4 +166,3 @@ All colors MUST be HSL.
     color: hsl(var(--dark-foreground));
   }
 }
-

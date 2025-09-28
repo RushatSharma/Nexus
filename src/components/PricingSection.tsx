@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const PricingSection = () => {
   const plans = [
@@ -15,7 +16,6 @@ const PricingSection = () => {
         'Up to 3 Campaigns'
       ],
       isPopular: false,
-      isDark: true, // This plan has a dark background
     },
     {
       name: 'Professional Package',
@@ -28,8 +28,7 @@ const PricingSection = () => {
         'Advanced Content Creation',
         'Expert Consultation'
       ],
-      isPopular: true, // This plan is popular
-      isDark: false, // This plan uses the primary color, which is a dark background
+      isPopular: true,
     }
   ];
 
@@ -49,14 +48,13 @@ const PricingSection = () => {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`rounded-3xl p-8 relative overflow-hidden 
-                ${plan.name === 'Professional Package' // Target the Professional Package
-                  ? 'bg-primary text-primary-foreground' // Primary red background, white text
-                  : plan.isDark 
-                    ? 'bg-foreground text-background' // Black background for basic package
-                    : 'bg-secondary text-foreground border border-border' // Fallback (not used here)
-                } 
-                ${plan.isPopular ? 'ring-2 ring-primary' : ''}`}
+              className={cn(
+                "rounded-3xl p-8 relative overflow-hidden",
+                {
+                  'bg-primary text-primary-foreground': plan.isPopular,
+                  'bg-foreground text-background dark:bg-background dark:text-foreground': !plan.isPopular
+                }
+              )}
             >
               {plan.isPopular && (
                 <div className="absolute top-6 right-6">
@@ -71,27 +69,31 @@ const PricingSection = () => {
                   <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
                   <div className="flex items-baseline space-x-2">
                     <span className="text-4xl font-bold">${plan.price}</span>
-                    <span className={`text-lg 
-                      ${plan.name === 'Professional Package' || plan.isDark ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                    <span className={cn(
+                        "text-lg",
+                        plan.isPopular ? "text-primary-foreground/70" : "text-background/70 dark:text-muted-foreground"
+                    )}>
                       /{plan.period}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <p className={`text-sm 
-                    ${plan.name === 'Professional Package' || plan.isDark ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                  <p className={cn(
+                      "text-sm",
+                      plan.isPopular ? "text-primary-foreground/70" : "text-background/70 dark:text-muted-foreground"
+                  )}>
                     What's included:
                   </p>
                   <ul className="space-y-3">
                     {plan.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-start space-x-3">
                         <div className="flex-shrink-0">
-                          {/* Green checkmark for all plans, now white */}
-                          <Check className="w-5 h-5 text-primary-foreground mt-0.5" /> 
+                          <Check className={cn("w-5 h-5 mt-0.5", 
+                            plan.isPopular ? 'text-primary-foreground' : 'text-success dark:text-foreground'
+                          )} />
                         </div>
-                        <span className={`text-sm 
-                          ${plan.name === 'Professional Package' || plan.isDark ? 'text-primary-foreground' : 'text-foreground'}`}>
+                        <span className="text-sm">
                           {feature}
                         </span>
                       </li>
@@ -102,21 +104,15 @@ const PricingSection = () => {
                 <div className="pt-6">
                   <Button 
                     className={`w-full ${
-                      plan.name === 'Professional Package'
-                        ? 'bg-background hover:bg-white/90 text-foreground' // White button on red background
-                        : plan.isDark 
-                          ? 'bg-primary hover:bg-primary-dark text-primary-foreground' // Red button on black background
-                          : 'btn-outline' // Fallback (not used here)
+                      plan.isPopular 
+                        ? 'bg-background text-foreground hover:bg-background/90' 
+                        : 'btn-primary'
                     }`}
                   >
                     {plan.isPopular ? 'Get Started' : 'Choose Plan'}
                   </Button>
                 </div>
               </div>
-
-              {/* Decorative elements */}
-              <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-full 
-                ${plan.name === 'Professional Package' ? 'bg-primary-dark/20' : (plan.isDark ? 'bg-background/10' : 'bg-primary/10')}`}></div>
             </div>
           ))}
         </div>

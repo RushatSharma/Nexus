@@ -113,7 +113,7 @@ const TestimonialsSection = () => {
             {testimonials.map((testimonial, index) => (
               <CarouselItem key={index} className="pl-4 md:basis-1/2">
                 <div className="p-0 h-full">
-                  <div className="bg-background rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 card-hover h-full flex flex-col">
+                  <div className="bg-card border border-border rounded-3xl p-8 shadow-lg h-full flex flex-col">
                     <div className="space-y-6 flex-grow">
                       <div className="flex items-center space-x-1">
                         {[...Array(testimonial.rating)].map((_, i) => (
@@ -153,3 +153,4 @@ const TestimonialsSection = () => {
 };
 
 export default TestimonialsSection;
+

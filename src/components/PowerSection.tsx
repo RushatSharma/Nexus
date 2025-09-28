@@ -11,18 +11,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // Array containing the services data with added gradient color properties for the hover effect
 const services = [
   {
-    icon: <Search className="h-8 w-8 text-blue-500" />,
+    icon: <Search className="h-8 w-8 text-info" />,
     title: "Search Engine Optimization (SEO)",
     description:
       "Boost your website's visibility on search engines to rank higher for relevant keywords and increase organic traffic.",
-    gradient: "from-blue-500 to-blue-300",
+    gradient: "from-info to-blue-300",
   },
   {
-    icon: <MousePointerClick className="h-8 w-8 text-green-500" />,
+    icon: <MousePointerClick className="h-8 w-8 text-success" />,
     title: "Pay-Per-Click (PPC) Advertising",
     description:
       "Get immediate, targeted traffic. We create and manage effective PPC campaigns to maximize your return on investment.",
-    gradient: "from-green-500 to-green-300",
+    gradient: "from-success to-green-300",
   },
   {
     icon: <ThumbsUp className="h-8 w-8 text-indigo-500" />,
@@ -32,11 +32,11 @@ const services = [
     gradient: "from-indigo-500 to-indigo-300",
   },
   {
-    icon: <FileText className="h-8 w-8 text-red-500" />,
+    icon: <FileText className="h-8 w-8 text-destructive" />,
     title: "Content Marketing",
     description:
       "Attract and retain customers with high-quality content that establishes you as an industry leader.",
-    gradient: "from-red-500 to-red-300",
+    gradient: "from-destructive to-red-300",
   },
   {
     icon: <Palette className="h-8 w-8 text-purple-500" />,
@@ -46,11 +46,11 @@ const services = [
     gradient: "from-purple-500 to-purple-300",
   },
   {
-    icon: <TrendingUp className="h-8 w-8 text-orange-500" />,
+    icon: <TrendingUp className="h-8 w-8 text-warning" />,
     title: "Analytics & Reporting",
     description:
       "Make data-driven decisions. We provide detailed analytics and transparent reporting to track progress and refine strategies.",
-    gradient: "from-orange-500 to-orange-300",
+    gradient: "from-warning to-orange-300",
   },
 ];
 
@@ -58,10 +58,10 @@ const PowerSection = () => {
   return (
     <section className="container py-10 sm:py-10">
       <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
           Our Core Services
         </h2>
-        <p className="mt-4 text-lg text-gray-600 md:text-xl">
+        <p className="mt-4 text-lg text-muted-foreground md:text-xl">
           We provide a comprehensive suite of digital marketing services to help
           your business grow.
         </p>
@@ -76,7 +76,7 @@ const PowerSection = () => {
               />
               <Card className="relative flex h-full flex-col text-center transition-transform duration-300 group-hover:-translate-y-2">
                 <CardHeader className="pt-8 pb-4">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
                     {service.icon}
                   </div>
                 </CardHeader>
@@ -84,7 +84,7 @@ const PowerSection = () => {
                   <CardTitle className="mb-3 text-xl font-bold">
                     {service.title}
                   </CardTitle>
-                  <p className="flex-1 text-md text-gray-700">
+                  <p className="flex-1 text-md text-muted-foreground">
                     {service.description}
                   </p>
                 </CardContent>
@@ -98,4 +98,3 @@ const PowerSection = () => {
 };
 
 export default PowerSection;
-
