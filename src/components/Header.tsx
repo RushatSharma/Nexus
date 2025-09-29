@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Sun, Moon, LogOut } from 'lucide-react';
 import NexusLogo from '../assets/Logo.png';
+import NexusLogoWhite from '../assets/LogoNavWhite.png'; 
 import { useAuth } from '../contexts/AuthContext';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -138,7 +139,7 @@ const Header: React.FC = () => {
           {/* Left Side: Logo */}
           <div className="lg:flex-1 flex justify-start">
             <NavLink to="/" className="flex items-center space-x-2">
-              <img src={NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
+              <img src={isDarkMode ? NexusLogoWhite : NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
               <span className="text-xl font-bold text-foreground">NEXUS</span>
             </NavLink>
           </div>

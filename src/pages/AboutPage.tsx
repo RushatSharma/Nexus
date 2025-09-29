@@ -211,7 +211,7 @@ const AboutPage = () => {
                             </p>
                             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                                 <Button size="lg" className="bg-background text-foreground hover:bg-background/90">Request Quote <ArrowRight className="w-4 h-4 ml-2" /></Button>
-                                <Button size="lg" variant="outline" className="text-foreground  hover:bg-white/20">Learn More</Button>
+                      
                             </div>
                         </div>
                         <div className="relative mt-8 md:mt-0 flex justify-center md:justify-end">
