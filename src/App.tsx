@@ -1,5 +1,3 @@
-// src/App.tsx
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,8 +9,8 @@ import ProjectsPage from "./pages/ProjectsPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ContactPage } from "./pages/ContactPage";
 import { AuthPage } from "./pages/AuthPage";
-import { HashRouter as Router } from "react-router-dom";
-import AboutPage from "./pages/AboutPage"; // Import the new AboutPage component
+import AboutPage from "./pages/AboutPage";
+import CaseStudyPage from "./pages/CaseStudyPage"; 
 
 const queryClient = new QueryClient();
 
@@ -25,8 +23,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/about" element={<AboutPage />} /> {/* Add this route */}
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/projects/:projectSlug" element={<CaseStudyPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/signup" element={<AuthPage />} />
