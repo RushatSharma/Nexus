@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Zap, Lightbulb, Users, ShieldCheck, ArrowRight, TrendingUp, UsersRound, Award, Megaphone } from "lucide-react";
 import teamMember1 from "@/assets/hero-woman.jpg";
 import logoSymbol from "@/assets/LogoAbout.png";
 import logoWhite from "@/assets/LogoWhite.png"; // Import the white logo
 import contactIllustration from "@/assets/contact-illustration.png";
+
 
 const AboutPage = () => {
   const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
@@ -175,7 +177,7 @@ const AboutPage = () => {
         </section>
         
         {/* --- Values Section --- */}
-        <section className="py-15 bg-background">
+        <section className="py-15 lg:p-10 bg-background">
             <div className="container-custom">
             <div className="text-center max-w-3xl mx-auto">
               <h3 className="text-primary font-semibold">Our Mission and Values</h3>
@@ -199,7 +201,7 @@ const AboutPage = () => {
             </div>
         </section>
 
-          {/* --- CTA Section: FULLY RESPONSIVE --- */}
+         {/* --- CTA Section: FULLY RESPONSIVE --- */}
         <section className="py-16">
             <div className="container-custom">
                 <div className="relative rounded-3xl p-8 md:p-12 lg:p-10 overflow-hidden bg-primary">
@@ -210,8 +212,11 @@ const AboutPage = () => {
                             Ready to bring your vision to life? Requesting a quote from Nexus is the first step towards turning your dreams into reality. Whether you're launching a new brand, aiming to increase your market reach, or looking to optimize your digital presence, our team of experts is standing by to provide you with a personalized estimate tailored to your project's needs. Let's build something amazing together.
                             </p>
                             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                                <Button size="lg" className="bg-background text-foreground hover:bg-background/90">Request Quote <ArrowRight className="w-4 h-4 ml-2" /></Button>
-                      
+                                <Link to="/contact">
+                                    <Button size="lg" className="bg-background text-foreground hover:bg-background/90">
+                                        Request Quote <ArrowRight className="w-4 h-4 ml-2" />
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                         <div className="relative mt-8 md:mt-0 flex justify-center md:justify-end">
