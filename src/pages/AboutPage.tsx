@@ -177,7 +177,7 @@ const AboutPage = () => {
         </section>
         
         {/* --- Values Section --- */}
-        <section className="py-15 lg:p-10 bg-background">
+        <section className="pt-20 pb-15 bg-background">
             <div className="container-custom">
             <div className="text-center max-w-3xl mx-auto">
               <h3 className="text-primary font-semibold">Our Mission and Values</h3>
