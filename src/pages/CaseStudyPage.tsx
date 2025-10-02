@@ -1,18 +1,23 @@
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getProjects } from "./ProjectsPage";
+import { getProjects } from "./ProjectsPage"; // <-- Changed: Import data from ProjectsPage
 import NotFound from "./NotFound";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart, CheckCircle, Target } from "lucide-react";
 
+// NOTE: This component no longer fetches from Firebase.
+// It synchronously gets data from the projects array.
+
 const CaseStudyPage = () => {
     const { projectSlug } = useParams();
-    const projects = getProjects();
+    
+    // Get the projects from the hardcoded array
+    const projects = getProjects(); 
     const project = projects.find(p => p.slug === projectSlug);
 
+    // If no project is found for the slug, or it doesn't have details, show the Not Found page.
     if (!project || !project.details) {
-        // You can return a proper 404 component here
         return <NotFound />;
     }
 
@@ -36,11 +41,11 @@ const CaseStudyPage = () => {
                     <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                         <div className="bg-muted p-6 rounded-xl">
                             <h3 className="text-4xl font-bold text-primary">{details.results.increaseInSales}</h3>
-                            <p className="mt-2 text-muted-foreground">Increase in Online Sales</p>
+                            <p className="mt-2 text-muted-foreground">Increase in Sales/Downloads</p>
                         </div>
                         <div className="bg-muted p-6 rounded-xl">
                             <h3 className="text-4xl font-bold text-primary">{details.results.increaseInTraffic}</h3>
-                            <p className="mt-2 text-muted-foreground">Organic Traffic Growth</p>
+                            <p className="mt-2 text-muted-foreground">Increase in Traffic/Metric</p>
                         </div>
                         <div className="bg-muted p-6 rounded-xl">
                             <h3 className="text-4xl font-bold text-primary">{details.results.roas}</h3>
@@ -74,26 +79,27 @@ const CaseStudyPage = () => {
                         </div>
                     </div>
                 </section>
-
-                {/* Gallery */}
-                <section className="mb-16">
-                    <h2 className="text-3xl font-bold text-foreground text-center mb-8">Project Gallery</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {details.gallery.map((img, index) => (
-                            <img key={index} src={img} alt={`${title} gallery image ${index + 1}`} className="rounded-lg shadow-md object-cover w-full h-64" />
-                        ))}
-                    </div>
-                </section>
-
-                {/* Client Quote */}
-                <section className="bg-muted rounded-2xl p-8 lg:p-12 text-center mb-16">
-                    <blockquote className="max-w-3xl mx-auto">
-                        <p className="text-2xl font-medium text-foreground">"{details.results.quote}"</p>
-                        <footer className="mt-6 text-lg font-semibold text-primary">- {client}</footer>
-                    </blockquote>
-                </section>
                 
-                {/* CTA */}
+                {details.gallery && details.gallery.length > 0 && (
+                    <section className="mb-16">
+                        <h2 className="text-3xl font-bold text-foreground text-center mb-8">Project Gallery</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {details.gallery.map((img, index) => (
+                                <img key={index} src={img} alt={`${title} gallery image ${index + 1}`} className="rounded-lg shadow-md object-cover w-full h-64" />
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {details.results.quote && (
+                    <section className="bg-muted rounded-2xl p-8 lg:p-12 text-center mb-16">
+                        <blockquote className="max-w-3xl mx-auto">
+                            <p className="text-2xl font-medium text-foreground">"{details.results.quote}"</p>
+                            <footer className="mt-6 text-lg font-semibold text-primary">- {client}</footer>
+                        </blockquote>
+                    </section>
+                )}
+                
                 <section className="text-center">
                     <h2 className="text-3xl font-bold text-foreground">Have a similar project?</h2>
                     <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
