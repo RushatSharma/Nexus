@@ -1,30 +1,19 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Sun, Moon, LogOut } from 'lucide-react';
-import NexusLogo from '../assets/Logo.png';
-import NexusLogoWhite from '../assets/LogoNavWhite.png'; 
-import { useAuth } from '../contexts/AuthContext';
-import { auth, db } from '../firebase';
+import { Menu, X, Sun, Moon, LogOut, User as UserIcon } from 'lucide-react';
+import NexusLogo from '@/assets/Logo.png';
+import NexusLogoWhite from '@/assets/LogoNavWhite.png'; 
+import { useAuth } from '@/hooks/useAuth';
+import { auth } from '@/firebase';
 import { signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from './ui/separator';
-import { cn } from '../lib/utils';
-
-interface Message {
-    id: string;
-    service: string;
-    message: string;
-    status: string;
-    createdAt: Timestamp | null;
-}
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const ProfileButton = () => {
     const { currentUser, userData } = useAuth();
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [loadingMessages, setLoadingMessages] = useState(false);
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -32,24 +21,11 @@ const ProfileButton = () => {
         navigate('/');
     };
     
-    const fetchMessages = async () => {
-        if (!currentUser) return;
-        setLoadingMessages(true);
-        const q = query(
-            collection(db, "messages"), 
-            where("userId", "==", currentUser.uid),
-            orderBy("createdAt", "desc")
-        );
-        const querySnapshot = await getDocs(q);
-        const userMessages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
-        setMessages(userMessages);
-        setLoadingMessages(false);
-    };
-
-    const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
+    const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('') : '';
+    const getFirstName = (name: string) => name ? name.split(' ')[0] : 'User';
 
     return (
-        <Popover onOpenChange={(open) => open && fetchMessages()}>
+        <Popover>
             <PopoverTrigger asChild>
                 <Button variant="ghost" className="rounded-full w-10 h-10">
                     <Avatar>
@@ -58,35 +34,22 @@ const ProfileButton = () => {
                     </Avatar>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
-                <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                         <Avatar>
-                            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} />
-                            <AvatarFallback>{userData?.name ? getInitials(userData.name) : 'U'}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-semibold">{userData?.name}</p>
-                            <p className="text-sm text-muted-foreground">{currentUser?.email}</p>
-                        </div>
-                    </div>
-                    <Separator />
-                    <div>
-                        <h4 className="text-sm font-semibold mb-2">Message History</h4>
-                        <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {loadingMessages ? <p className="text-sm text-muted-foreground">Loading messages...</p> : 
-                                messages.length > 0 ? messages.map(msg => (
-                                    <div key={msg.id} className="text-sm p-2 bg-secondary rounded-md">
-                                        <p className="font-semibold capitalize">{msg.service}</p>
-                                        <p className="text-muted-foreground truncate">{msg.message}</p>
-                                        <p className="text-xs text-muted-foreground/70 capitalize">Status: {msg.status}</p>
-                                    </div>
-                                )) : <p className="text-sm text-muted-foreground">No messages sent yet.</p>
-                            }
-                        </div>
-                    </div>
-                    <Separator />
-                    <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
+            <PopoverContent className="w-64">
+                <div className="flex flex-col items-center text-center p-2">
+                    <Avatar className="w-16 h-16 mb-2">
+                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} />
+                        <AvatarFallback className="text-2xl">{userData?.name ? getInitials(userData.name) : 'U'}</AvatarFallback>
+                    </Avatar>
+                    <p className="font-semibold text-lg">Hi, {userData?.name ? getFirstName(userData.name) : 'User'}!</p>
+                    <p className="text-sm text-muted-foreground mb-4">{currentUser?.email}</p>
+                    
+                    <NavLink to="/account" className="w-full">
+                        <Button variant="default" className="w-full btn-primary mb-2">
+                           <UserIcon className="w-4 h-4 mr-2" />
+                            Manage Account
+                        </Button>
+                    </NavLink>
+                    <Button variant="outline" className="w-full" onClick={handleLogout}>
                         <LogOut className="w-4 h-4 mr-2" />
                         Logout
                     </Button>
@@ -102,15 +65,29 @@ const Header: React.FC = () => {
     const savedTheme = localStorage.getItem('theme');
     return savedTheme === 'dark';
   });
-  const { currentUser, userData } = useAuth();
-  const navigate = useNavigate();
+  const { currentUser, isAdmin, userData } = useAuth();
 
-  const navigation = [
+  // Base navigation links
+  const baseNavigation = [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/about' },
     { name: 'Projects', href: '/projects' },
     { name: 'Contact Us', href: '/contact' },
   ];
+
+  // Dynamically build navigation based on auth state
+  const getNavigation = () => {
+    let nav = [...baseNavigation];
+    if (currentUser) {
+      nav.push({ name: 'Account', href: '/account' });
+    }
+    if (isAdmin) {
+      nav.push({ name: 'Admin', href: '/admin' });
+    }
+    return nav;
+  };
+  
+  const navigation = getNavigation();
 
   useEffect(() => {
     if (isDarkMode) {
@@ -126,17 +103,13 @@ const Header: React.FC = () => {
     setIsDarkMode(prevMode => !prevMode);
   };
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate('/');
-  };
+  const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('') : '';
 
   return (
     <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="container-custom">
         <div className="relative flex items-center justify-between h-16 lg:h-20">
           
-          {/* Left Side: Logo */}
           <div className="lg:flex-1 flex justify-start">
             <NavLink to="/" className="flex items-center space-x-2">
               <img src={isDarkMode ? NexusLogoWhite : NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
@@ -144,7 +117,6 @@ const Header: React.FC = () => {
             </NavLink>
           </div>
 
-          {/* Center: Navigation (Desktop) */}
           <nav className="hidden lg:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 items-center space-x-8">
             {navigation.map((item) => (
               <NavLink
@@ -163,7 +135,6 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Right Side: Theme Toggle and Auth (Desktop) */}
           <div className="hidden lg:flex flex-1 justify-end items-center space-x-4">
             <button
               onClick={toggleTheme}
@@ -184,7 +155,6 @@ const Header: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="lg:hidden">
             <button
               className="p-2 rounded-md text-foreground"
@@ -195,10 +165,25 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Menu Content */}
         {isMenuOpen && (
           <div className="absolute left-0 w-full lg:hidden bg-background/95 backdrop-blur-sm p-4 border-t border-border shadow-md">
-            <nav className="flex flex-col space-y-3">
+            <nav className="flex flex-col space-y-1">
+              {currentUser && (
+                <>
+                  <div className="px-3 py-2 flex items-center gap-3">
+                    <Avatar>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} />
+                        <AvatarFallback>{userData?.name ? getInitials(userData.name) : 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-semibold text-foreground">{userData?.name || "User"}</p>
+                        <p className="text-sm text-muted-foreground">{currentUser.email}</p>
+                    </div>
+                  </div>
+                  <Separator className="my-2"/>
+                </>
+              )}
+
               {navigation.map((item) => (
                 <NavLink
                   key={item.name}
@@ -214,22 +199,14 @@ const Header: React.FC = () => {
                   {item.name}
                 </NavLink>
               ))}
-              <div className="pt-3 border-t border-border flex flex-col gap-3">
-                 {currentUser ? (
-                     <div className='px-3 flex flex-col gap-3'>
-                        <p className="text-muted-foreground">Welcome, {userData?.name || 'User'}</p>
-                        <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-                            <LogOut className="w-4 h-4 mr-2" />
-                            Logout
-                        </Button>
-                     </div>
-                 ) : (
-                     <>
-                        <NavLink to="/signup" onClick={() => setIsMenuOpen(false)}>
-                            <Button className="btn-primary w-full">Sign Up</Button>
-                        </NavLink>
-                    </>
-                 )}
+
+              {!currentUser && (
+                <NavLink to="/signup" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="btn-primary w-full mt-2">Sign Up</Button>
+                </NavLink>
+              )}
+
+              <div className="pt-3 border-t border-border mt-2">
                  <div className="px-3 pt-2">
                     <Button variant="outline" className="w-full" onClick={toggleTheme}>
                         {isDarkMode ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
@@ -246,3 +223,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+

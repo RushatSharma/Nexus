@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AuroraTextEffect } from "@/components/AuroraTextEffect";
-import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
+import { useAuth } from '../hooks/useAuth'; // Import useAuth
 import { db } from '@/firebase'; // Import db
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; // Import firestore functions
 
