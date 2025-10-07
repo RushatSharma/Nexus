@@ -78,6 +78,7 @@ const AccountPage = () => {
   }, [loading, currentUser, navigate]);
 
   if (loading) {
+    // Skeleton loader remains the same
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
@@ -106,100 +107,102 @@ const AccountPage = () => {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 container-custom py-12">
-        <Tabs defaultValue="profile" className="w-full">
-            <div className="grid gap-8 md:grid-cols-3 max-w-md mx-auto md:max-w-full">
-            <div className="md:col-span-1 flex flex-col items-center">
-                <div className="text-center">
-                    <Avatar className="w-24 h-24 mb-4 mx-auto">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'User'}`} />
-                    <AvatarFallback className="text-3xl">{userData?.name ? getInitials(userData.name) : 'U'}</AvatarFallback>
-                    </Avatar>
-                    <h2 className="text-3xl font-bold text-foreground">{userData?.name}</h2>
-                    <p className="text-base text-muted-foreground">{currentUser?.email}</p>
-                </div>
+        <div className="grid gap-12 md:grid-cols-4">
+          {/* --- Left Column: User Identity and Actions --- */}
+          <div className="md:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
+            <Avatar className="w-24 h-24 mb-4">
+              <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'User'}`} />
+              <AvatarFallback className="text-3xl">{userData?.name ? getInitials(userData.name) : 'U'}</AvatarFallback>
+            </Avatar>
+            <h2 className="text-3xl font-bold text-foreground">{userData?.name}</h2>
+            <p className="text-base text-muted-foreground">{currentUser?.email}</p>
+            <Button onClick={handleLogout} variant="destructive" className="w-full mt-6 md:w-auto">
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
 
-                <TabsList className="grid w-full grid-cols-2 mt-6">
-                    <TabsTrigger value="profile">
-                    <UserCircle className="w-4 h-4 mr-2" />
-                    Profile
-                    </TabsTrigger>
-                    <TabsTrigger value="messages" onClick={fetchMessages}>
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Messages
-                    </TabsTrigger>
-                </TabsList>
-
-                <Button onClick={handleLogout} variant="destructive" className="w-full mt-6">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-                </Button>
-            </div>
-
-            <div className="md:col-span-2">
-                <TabsContent value="profile" className="m-0">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-3xl">Profile Details</CardTitle>
-                            <CardDescription className="text-base">Your personal account information.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="name" className="text-base">Name</Label>
-                                <Input id="name" type="text" value={userData?.name || 'N/A'} readOnly className="bg-muted text-base" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-base">Email</Label>
-                                <Input id="email" type="email" value={currentUser?.email || 'N/A'} readOnly className="bg-muted text-base" />
-                            </div>
-                            {userData?.organization && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="organization" className="text-base">Organization</Label>
-                                    <Input id="organization" type="text" value={userData.organization} readOnly className="bg-muted text-base" />
-                                </div>
-                            )}
-                            {userData?.role && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="role" className="text-base">Role</Label>
-                                    <Input id="role" type="text" value={userData.role.charAt(0).toUpperCase() + userData.role.slice(1)} readOnly className="bg-muted text-base" />
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+          {/* --- Right Column: Tabbed Content --- */}
+          <div className="md:col-span-3">
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 max-w-md">
+                <TabsTrigger value="profile">
+                  <UserCircle className="w-4 h-4 mr-2" />
+                  Profile
+                </TabsTrigger>
+                <TabsTrigger value="messages" onClick={fetchMessages}>
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Messages
+                </TabsTrigger>
+              </TabsList>
+              
+              <div className="mt-6 h-[520px] w-full">
+                <TabsContent value="profile" className="h-full m-0">
+                  <Card className="h-full w-full">
+                    <CardHeader>
+                      <CardTitle className="text-3xl">Profile Details</CardTitle>
+                      <CardDescription className="text-base">Your personal account information.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-base">Name</Label>
+                        <Input id="name" type="text" value={userData?.name || 'N/A'} readOnly className="bg-muted text-base" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-base">Email</Label>
+                        <Input id="email" type="email" value={currentUser?.email || 'N/A'} readOnly className="bg-muted text-base" />
+                      </div>
+                      {userData?.organization && (
+                        <div className="space-y-2">
+                          <Label htmlFor="organization" className="text-base">Organization</Label>
+                          <Input id="organization" type="text" value={userData.organization} readOnly className="bg-muted text-base" />
+                        </div>
+                      )}
+                      {userData?.role && (
+                        <div className="space-y-2">
+                          <Label htmlFor="role" className="text-base">Role</Label>
+                          <Input id="role" type="text" value={userData.role.charAt(0).toUpperCase() + userData.role.slice(1)} readOnly className="bg-muted text-base" />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </TabsContent>
-                <TabsContent value="messages" className="m-0">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-3xl">Message History</CardTitle>
-                            <CardDescription className="text-base">A list of messages you've sent via the contact form.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {messagesLoading ? (
-                                <div className="space-y-2">
-                                    <Skeleton className="h-20 w-full" />
-                                    <Skeleton className="h-20 w-full" />
-                                    <Skeleton className="h-20 w-full" />
-                                </div>
-                            ) : messages.length > 0 ? (
-                                <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                                    {messages.map(msg => (
-                                        <div key={msg.id} className="p-4 bg-muted rounded-md border">
-                                            <p className="text-lg font-semibold text-primary capitalize">{msg.service}</p>
-                                            <p className="text-base text-foreground mb-1">{msg.message}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Status: <span className="capitalize font-medium">{msg.status}</span> | Sent: {msg.createdAt?.toDate().toLocaleString()}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-muted-foreground text-center py-8">No messages sent yet.</p>
-                            )}
-                        </CardContent>
-                    </Card>
+
+                <TabsContent value="messages" className="h-full m-0">
+                  <Card className="h-full w-full flex flex-col">
+                    <CardHeader>
+                        <CardTitle className="text-3xl">Message History</CardTitle>
+                        <CardDescription className="text-base">A list of messages you've sent via the contact form.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 space-y-4 overflow-y-auto pr-2">
+                        {messagesLoading ? (
+                            <div className="space-y-2">
+                                <Skeleton className="h-20 w-full" />
+                                <Skeleton className="h-20 w-full" />
+                                <Skeleton className="h-20 w-full" />
+                            </div>
+                        ) : messages.length > 0 ? (
+                            <div className="space-y-3">
+                                {messages.map(msg => (
+                                    <div key={msg.id} className="p-4 bg-muted rounded-md border">
+                                        <p className="text-lg font-semibold text-primary capitalize">{msg.service}</p>
+                                        <p className="text-base text-foreground mb-1">{msg.message}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Status: <span className="capitalize font-medium">{msg.status}</span> | Sent: {msg.createdAt?.toDate().toLocaleString()}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground text-center py-8">No messages sent yet.</p>
+                        )}
+                    </CardContent>
+                  </Card>
                 </TabsContent>
-            </div>
-            </div>
-        </Tabs>
+              </div>
+            </Tabs>
+          </div>
+        </div>
       </main>
       <Footer />
     </div>
