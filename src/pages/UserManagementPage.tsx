@@ -57,7 +57,7 @@ const UserManagementPage = () => {
             <main className="flex-1 container mx-auto px-4 py-12 sm:px-6 lg:px-8">
                 <div className="max-w-5xl mx-auto">
                     <div className="mb-8">
-                        <Link to="/admin" className="flex items-center text-sm text-muted-foreground hover:text-foreground">
+                        <Link to="/admin" className="flex items-center text-base text-muted-foreground hover:text-foreground">
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Back to Dashboard
                         </Link>
@@ -67,15 +67,15 @@ const UserManagementPage = () => {
                         <CardHeader>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div>
-                                    <CardTitle>User Management</CardTitle>
-                                    <CardDescription>Assign roles and manage user access.</CardDescription>
+                                    <CardTitle className="text-2xl">User Management</CardTitle>
+                                    <CardDescription className="text-base">Assign roles and manage user access.</CardDescription>
                                 </div>
                                 <div className="relative w-full sm:w-64">
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input 
                                         type="search" 
                                         placeholder="Search by name or email..." 
-                                        className="pl-8 w-full" 
+                                        className="pl-8 w-full text-base" 
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
@@ -86,9 +86,9 @@ const UserManagementPage = () => {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>User</TableHead>
-                                        <TableHead className="hidden sm:table-cell">Role</TableHead>
-                                        <TableHead>Actions</TableHead>
+                                        <TableHead className="text-base">User</TableHead>
+                                        <TableHead className="hidden sm:table-cell text-base">Role</TableHead>
+                                        <TableHead className="text-base">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -101,19 +101,19 @@ const UserManagementPage = () => {
                                                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                                     </Avatar>
                                                     <div>
-                                                        <p className="font-medium text-foreground">{user.name}</p>
-                                                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                                                        <p className="font-medium text-foreground text-base">{user.name}</p>
+                                                        <p className="text-base text-muted-foreground">{user.email}</p>
                                                     </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="hidden sm:table-cell">
-                                                 <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                                                 <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="text-sm">
                                                     {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                                                  </Badge>
                                             </TableCell>
                                             <TableCell>
                                                 <Select defaultValue={user.role}>
-                                                    <SelectTrigger className="w-[120px]">
+                                                    <SelectTrigger className="w-[120px] text-base">
                                                         <SelectValue placeholder="Change role" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -136,4 +136,3 @@ const UserManagementPage = () => {
 };
 
 export default UserManagementPage;
-

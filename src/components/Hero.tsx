@@ -3,6 +3,7 @@ import { Star } from 'lucide-react';
 import heroImage from '@/assets/hero.png';
 import { Link } from 'react-router-dom';
 import { AuroraTextEffect } from './AuroraTextEffect'; // Make sure this path is correct
+import { cn } from '@/lib/utils';
 
 const Hero = () => {
   return (
@@ -47,8 +48,11 @@ const Hero = () => {
               </Link>
             </div>
 
-            {/* --- NEW BLACK COMPONENT START --- */}
-            <div className="bg-foreground text-background p-8 rounded-3xl relative max-w-md pt-6">
+            {/* --- UPDATED BLACK COMPONENT START --- */}
+            <div className={cn(
+                "p-8 rounded-3xl relative max-w-md pt-6",
+                "bg-foreground text-background dark:bg-[#FFFBF5] dark:text-black"
+              )}>
               <Link to="/projects">
                 <div className="absolute top-4 right-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-110">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transform -rotate-45"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
@@ -65,7 +69,7 @@ const Hero = () => {
                 Explore Our Real Project That Help Our Clients Business Growth Every Year
               </h3>
             </div>
-            {/* --- NEW BLACK COMPONENT END --- */}
+            {/* --- UPDATED BLACK COMPONENT END --- */}
           </div>
           
           {/* Right Content (Image) */}

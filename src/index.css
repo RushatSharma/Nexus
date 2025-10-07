@@ -125,10 +125,33 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-jakarta font-medium;
+    /* Custom Scrollbar for Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary)) hsl(var(--background));
   }
 
   html {
     scroll-behavior: smooth;
+  }
+  
+  /* Custom Scrollbar for Webkit Browsers */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--primary));
+    border-radius: 10px;
+    border: 2px solid hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--primary-dark));
   }
 }
 

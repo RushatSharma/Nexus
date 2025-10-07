@@ -7,8 +7,8 @@ import {
   Search,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
-// Array containing the services data with added gradient color properties for the hover effect
 const services = [
   {
     icon: <Search className="h-8 w-8 text-info" />,
@@ -16,6 +16,7 @@ const services = [
     description:
       "Boost your website's visibility on search engines to rank higher for relevant keywords and increase organic traffic.",
     gradient: "from-info to-blue-300",
+    shadowColor: "hover:shadow-info/40",
   },
   {
     icon: <MousePointerClick className="h-8 w-8 text-success" />,
@@ -23,6 +24,7 @@ const services = [
     description:
       "Get immediate, targeted traffic. We create and manage effective PPC campaigns to maximize your return on investment.",
     gradient: "from-success to-green-300",
+    shadowColor: "hover:shadow-success/40",
   },
   {
     icon: <ThumbsUp className="h-8 w-8 text-indigo-500" />,
@@ -30,6 +32,7 @@ const services = [
     description:
       "Engage your audience and build your brand on social platforms. We develop strategies to grow your community and drive meaningful interactions.",
     gradient: "from-indigo-500 to-indigo-300",
+    shadowColor: "hover:shadow-indigo-500/40",
   },
   {
     icon: <FileText className="h-8 w-8 text-destructive" />,
@@ -37,6 +40,7 @@ const services = [
     description:
       "Attract and retain customers with high-quality content that establishes you as an industry leader.",
     gradient: "from-destructive to-red-300",
+    shadowColor: "hover:shadow-destructive/40",
   },
   {
     icon: <Palette className="h-8 w-8 text-purple-500" />,
@@ -44,6 +48,7 @@ const services = [
     description:
       "Craft a memorable brand identity, from logo design to your brand's voice, that makes you stand out from the competition.",
     gradient: "from-purple-500 to-purple-300",
+    shadowColor: "hover:shadow-purple-500/40",
   },
   {
     icon: <TrendingUp className="h-8 w-8 text-warning" />,
@@ -51,6 +56,7 @@ const services = [
     description:
       "Make data-driven decisions. We provide detailed analytics and transparent reporting to track progress and refine strategies.",
     gradient: "from-warning to-orange-300",
+    shadowColor: "hover:shadow-warning/40",
   },
 ];
 
@@ -74,7 +80,10 @@ const PowerSection = () => {
               <div
                 className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r ${service.gradient} opacity-0 blur transition-all duration-300 group-hover:opacity-75`}
               />
-              <Card className="relative flex h-full flex-col text-center transition-transform duration-300 group-hover:-translate-y-2">
+              <Card className={cn(
+                "relative flex h-full flex-col text-center transition-all duration-300 group-hover:-translate-y-2 shadow-lg",
+                service.shadowColor
+              )}>
                 <CardHeader className="pt-8 pb-4">
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
                     {service.icon}
