@@ -15,31 +15,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 
-// --- Hardcoded Demo Message Data ---
-const demoMessages = [
-    {
-        id: '1',
-        service: 'Search Engine Optimization (SEO)',
-        message: 'Hello, I was interested in learning more about your SEO services for my e-commerce store. Can we schedule a call?',
-        status: 'Replied',
-        createdAt: new Date('2023-10-26T10:00:00Z'),
-    },
-    {
-        id: '2',
-        service: 'Branding & Creative Services',
-        message: 'Our company is looking to rebrand. I saw your portfolio and was very impressed. What is the first step to get a quote?',
-        status: 'New',
-        createdAt: new Date('2023-10-28T14:30:00Z'),
-    },
-    {
-        id: '3',
-        service: 'Social Media Marketing',
-        message: 'Do you offer packages for managing Instagram and TikTok accounts for a small business?',
-        status: 'Replied',
-        createdAt: new Date('2023-10-25T09:15:00Z'),
-    },
-];
-
 interface Message {
     id: string;
     service: string;
@@ -64,11 +39,25 @@ const AccountPage = () => {
   const fetchMessages = async () => {
     if (!currentUser) return;
     setMessagesLoading(true);
-    // For now, we use the demo data. Later, this will fetch from Firestore.
-    setTimeout(() => {
-        setMessages(demoMessages.map(msg => ({...msg, createdAt: Timestamp.fromDate(msg.createdAt)})));
+    try {
+        const messagesCollection = collection(db, 'messages');
+        const q = query(
+            messagesCollection,
+            where("userId", "==", currentUser.uid),
+            orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const messagesList = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Message[];
+        setMessages(messagesList);
+    } catch (error) {
+        console.error("Error fetching messages: ", error);
+        // Optionally set an error state to show in the UI
+    } finally {
         setMessagesLoading(false);
-    }, 1000); // Simulate network delay
+    }
   };
 
   useEffect(() => {
@@ -78,7 +67,6 @@ const AccountPage = () => {
   }, [loading, currentUser, navigate]);
 
   if (loading) {
-    // Skeleton loader remains the same
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
@@ -101,14 +89,13 @@ const AccountPage = () => {
     );
   }
 
-  if (!currentUser) return null; 
+  if (!currentUser) return null;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 container-custom py-12">
         <div className="grid gap-12 md:grid-cols-4">
-          {/* --- Left Column: User Identity and Actions --- */}
           <div className="md:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
             <Avatar className="w-24 h-24 mb-4">
               <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'User'}`} />
@@ -122,7 +109,6 @@ const AccountPage = () => {
             </Button>
           </div>
 
-          {/* --- Right Column: Tabbed Content --- */}
           <div className="md:col-span-3">
             <Tabs defaultValue="profile" className="w-full">
               <TabsList className="grid w-full grid-cols-2 max-w-md">

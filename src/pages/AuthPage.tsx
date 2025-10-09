@@ -3,280 +3,289 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase"; // Import db from firebase
+import { doc, setDoc } from "firebase/firestore"; // Import firestore functions
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link, NavLink, useNavigate } from "react-router-dom"; // Import NavLink
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   CheckCircle2,
   Eye,
   EyeOff,
-  Menu, // Import Menu
-  Moon, // Import Moon
-  Sun, // Import Sun
-  X, // Import X
+  Menu,
+  Moon,
+  Sun,
+  X,
 } from "lucide-react";
 import AuthIllustration from "@/assets/Auth.png";
-import AuthIllustrationWhite from "@/assets/AuthWhite.png"; // Import the white illustration
+import AuthIllustrationWhite from "@/assets/AuthWhite.png";
 import NexusLogo from "@/assets/Logo.png";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { cn } from "@/lib/utils"; // Import cn
+import { cn } from "@/lib/utils";
 
 const OrDivider = () => (
-  <div className="flex items-center my-2">
-    <div className="flex-grow border-t border-border"></div>
-    <span className="mx-4 text-xs font-medium text-muted-foreground uppercase">
-      OR
-    </span>
-    <div className="flex-grow border-t border-border"></div>
-  </div>
+    <div className="flex items-center my-2">
+        <div className="flex-grow border-t border-border"></div>
+        <span className="mx-4 text-xs font-medium text-muted-foreground uppercase">
+            OR
+        </span>
+        <div className="flex-grow border-t border-border"></div>
+    </div>
 );
 
 const SocialLogins = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-    <Button variant="outline">Google</Button>
-    <Button variant="outline">GitHub</Button>
-  </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Button variant="outline">Google</Button>
+        <Button variant="outline">GitHub</Button>
+    </div>
 );
 
 const AuthHeader = ({ isDarkMode, toggleTheme }: { isDarkMode: boolean; toggleTheme: () => void }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navigation = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Projects", href: "/projects" },
-    { name: "Contact Us", href: "/contact" },
-  ];
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigation = [
+        { name: "Home", href: "/" },
+        { name: "About", href: "/about" },
+        { name: "Projects", href: "/projects" },
+        { name: "Contact Us", href: "/contact" },
+    ];
 
-  return (
-    <header className="absolute top-0 left-0 right-0 p-4 bg-transparent z-20">
-      <div className="container-custom flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2">
-          <img src={NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
-          <span className="text-xl font-bold text-foreground">NEXUS</span>
-        </Link>
-        {/* Center: Navigation (Desktop) */}
-        <nav className="hidden lg:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 items-center space-x-8">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              className={({ isActive }) =>
-                cn(
-                  "font-medium text-foreground transition-colors hover:text-primary py-2 relative",
-                  "after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-0 after:bg-primary after:transition-transform after:duration-300",
-                  isActive && "text-primary after:scale-x-100"
-                )
-              }
-            >
-              {item.name}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="hidden lg:flex items-center space-x-2">
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-md bg-secondary hover:bg-muted transition-colors"
-            aria-label="Toggle Theme"
-          >
-            {isDarkMode ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </button>
-          <Link to="/" className="hidden sm:flex">
-            <Button variant="outline" className="btn-outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
-          </Link>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <div className="lg:hidden">
-          <button
-            className="p-2 rounded-md text-foreground"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
-        </div>
-      </div>
-      {/* Mobile Menu Content */}
-      {isMenuOpen && (
-        <div className="absolute left-0 w-full lg:hidden bg-background/95 backdrop-blur-sm p-4 border-t border-border shadow-md">
-          <nav className="flex flex-col space-y-3">
-            {navigation.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={({ isActive }) =>
-                  cn(
-                    "text-foreground hover:text-primary px-3 py-2 rounded-md",
-                    isActive && "bg-secondary text-primary font-semibold"
-                  )
-                }
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.name}
-              </NavLink>
-            ))}
-            <div className="pt-3 border-t border-border flex flex-col gap-3">
-              <div className="px-3 pt-2">
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={toggleTheme}
-                >
-                  {isDarkMode ? (
-                    <Sun className="w-4 h-4 mr-2" />
-                  ) : (
-                    <Moon className="w-4 h-4 mr-2" />
-                  )}
-                  Toggle Theme
-                </Button>
-              </div>
+    return (
+        <header className="absolute top-0 left-0 right-0 p-4 bg-transparent z-20">
+            <div className="container-custom flex justify-between items-center">
+                <Link to="/" className="flex items-center space-x-2">
+                    <img src={NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
+                    <span className="text-xl font-bold text-foreground">NEXUS</span>
+                </Link>
+                <nav className="hidden lg:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 items-center space-x-8">
+                    {navigation.map((item) => (
+                        <NavLink
+                            key={item.name}
+                            to={item.href}
+                            className={({ isActive }) =>
+                                cn(
+                                    "font-medium text-foreground transition-colors hover:text-primary py-2 relative",
+                                    "after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-0 after:bg-primary after:transition-transform after:duration-300",
+                                    isActive && "text-primary after:scale-x-100"
+                                )
+                            }
+                        >
+                            {item.name}
+                        </NavLink>
+                    ))}
+                </nav>
+                <div className="hidden lg:flex items-center space-x-2">
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-md bg-secondary hover:bg-muted transition-colors"
+                        aria-label="Toggle Theme"
+                    >
+                        {isDarkMode ? (
+                            <Sun className="w-5 h-5" />
+                        ) : (
+                            <Moon className="w-5 h-5" />
+                        )}
+                    </button>
+                    <Link to="/" className="hidden sm:flex">
+                        <Button variant="outline" className="btn-outline">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Home
+                        </Button>
+                    </Link>
+                </div>
+                <div className="lg:hidden">
+                    <button
+                        className="p-2 rounded-md text-foreground"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    >
+                        {isMenuOpen ? (
+                            <X className="w-6 h-6" />
+                        ) : (
+                            <Menu className="w-6 h-6" />
+                        )}
+                    </button>
+                </div>
             </div>
-          </nav>
-        </div>
-      )}
-    </header>
-  );
+            {isMenuOpen && (
+                <div className="absolute left-0 w-full lg:hidden bg-background/95 backdrop-blur-sm p-4 border-t border-border shadow-md">
+                    <nav className="flex flex-col space-y-3">
+                        {navigation.map((item) => (
+                            <NavLink
+                                key={item.name}
+                                to={item.href}
+                                className={({ isActive }) =>
+                                    cn(
+                                        "text-foreground hover:text-primary px-3 py-2 rounded-md",
+                                        isActive && "bg-secondary text-primary font-semibold"
+                                    )
+                                }
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                {item.name}
+                            </NavLink>
+                        ))}
+                        <div className="pt-3 border-t border-border flex flex-col gap-3">
+                            <div className="px-3 pt-2">
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={toggleTheme}
+                                >
+                                    {isDarkMode ? (
+                                        <Sun className="w-4 h-4 mr-2" />
+                                    ) : (
+                                        <Moon className="w-4 h-4 mr-2" />
+                                    )}
+                                    Toggle Theme
+                                </Button>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            )}
+        </header>
+    );
 };
+
 export function AuthPage() {
-  const [isDarkMode, setIsDarkMode] = useState(
-    document.documentElement.classList.contains("dark")
-  );
-  const [signupName, setSignupName] = useState("");
-  const [signupOrg, setSignupOrg] = useState("");
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [signupLoading, setSignupLoading] = useState(false);
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const navigate = useNavigate();
+    const [isDarkMode, setIsDarkMode] = useState(
+        document.documentElement.classList.contains("dark")
+    );
+    const [signupName, setSignupName] = useState("");
+    const [signupOrg, setSignupOrg] = useState("");
+    const [signupEmail, setSignupEmail] = useState("");
+    const [signupPassword, setSignupPassword] = useState("");
+    const [loginEmail, setLoginEmail] = useState("");
+    const [loginPassword, setLoginPassword] = useState("");
+    const [signupLoading, setSignupLoading] = useState(false);
+    const [loginLoading, setLoginLoading] = useState(false);
+    const [showLoginPassword, setShowLoginPassword] = useState(false);
+    const [showSignupPassword, setShowSignupPassword] = useState(false);
+    const navigate = useNavigate();
 
-  const toggleTheme = () => {
-    setIsDarkMode((prevMode) => {
-      const newMode = !prevMode;
-      if (newMode) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-      return newMode;
-    });
-  };
+    const toggleTheme = () => {
+        setIsDarkMode((prevMode) => {
+            const newMode = !prevMode;
+            if (newMode) {
+                document.documentElement.classList.add("dark");
+            } else {
+                document.documentElement.classList.remove("dark");
+            }
+            return newMode;
+        });
+    };
 
-  useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "class") {
-          setIsDarkMode(document.documentElement.classList.contains("dark"));
+    useEffect(() => {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "class") {
+                    setIsDarkMode(document.documentElement.classList.contains("dark"));
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, { attributes: true });
+
+        return () => observer.disconnect();
+    }, []);
+
+    const [alert, setAlert] = useState<{
+        type: "success" | "destructive";
+        message: string;
+    } | null>(null);
+
+    const showAlert = (
+        type: "success" | "destructive",
+        message: string,
+        redirect = false
+    ) => {
+        setAlert({ type, message });
+        if (redirect) {
+            setTimeout(() => {
+                setAlert(null);
+                navigate("/");
+            }, 1500);
+        } else {
+            setTimeout(() => setAlert(null), 4000);
         }
-      });
-    });
+    };
 
-    observer.observe(document.documentElement, { attributes: true });
+    const handleSignup = async () => {
+        if (!signupEmail || !signupPassword || !signupName) {
+            showAlert("destructive", "Please fill in all required fields.");
+            return;
+        }
+        setSignupLoading(true);
+        try {
+            // Step 1: Create user in Firebase Auth
+            const userCredential = await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
+            const user = userCredential.user;
 
-    return () => observer.disconnect();
-  }, []);
+            // Step 2: Create a document in Firestore 'users' collection
+            await setDoc(doc(db, "users", user.uid), {
+                name: signupName,
+                email: signupEmail,
+                organization: signupOrg,
+                role: 'user' // Default role
+            });
 
-  const [alert, setAlert] = useState<{
-    type: "success" | "destructive";
-    message: string;
-  } | null>(null);
+            showAlert("success", "Account created successfully! Redirecting...", true);
+        } catch (error: any) {
+            let message = "An unknown error occurred.";
+            switch (error.code) {
+                case "auth/email-already-in-use":
+                    message = "An account with this email already exists. Please log in.";
+                    break;
+                case "auth/weak-password":
+                    message = "Password should be at least 6 characters long.";
+                    break;
+                case "auth/invalid-email":
+                    message = "Please enter a valid email address.";
+                    break;
+                case "auth/network-request-failed":
+                    message = "Network error. Please check your connection and try again.";
+                    break;
+            }
+            showAlert("destructive", message);
+        } finally {
+            setSignupLoading(false);
+        }
+    };
 
-  const showAlert = (
-    type: "success" | "destructive",
-    message: string,
-    redirect = false
-  ) => {
-    setAlert({ type, message });
-    if (redirect) {
-      setTimeout(() => {
-        setAlert(null);
-        navigate("/");
-      }, 1500);
-    } else {
-      setTimeout(() => setAlert(null), 4000);
-    }
-  };
-
-  const handleSignup = async () => {
-    if (!signupEmail || !signupPassword || !signupName) {
-      showAlert("destructive", "Please fill in all required fields.");
-      return;
-    }
-    setSignupLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
-      showAlert("success", "Account created successfully! Redirecting...", true);
-    } catch (error: any) {
-      let message = "An unknown error occurred.";
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          message = "An account with this email already exists. Please log in.";
-          break;
-        case "auth/weak-password":
-          message = "Password should be at least 6 characters long.";
-          break;
-        case "auth/invalid-email":
-          message = "Please enter a valid email address.";
-          break;
-        case "auth/network-request-failed":
-          message = "Network error. Please check your connection and try again.";
-          break;
-      }
-      showAlert("destructive", message);
-    } finally {
-      setSignupLoading(false);
-    }
-  };
-
-  const handleLogin = async () => {
-    if (!loginEmail || !loginPassword) {
-      showAlert("destructive", "Please fill in both email and password.");
-      return;
-    }
-    setLoginLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-      showAlert("success", "Logged in successfully! Redirecting...", true);
-    } catch (error: any) {
-      let message = "An unknown error occurred.";
-      switch (error.code) {
-        case "auth/invalid-credential":
-        case "auth/wrong-password":
-          message = "Incorrect email or password. Please try again.";
-          break;
-        case "auth/user-not-found":
-          message = "No account found with this email. Please sign up.";
-          break;
-        case "auth/invalid-email":
-          message = "Please enter a valid email address.";
-          break;
-        case "auth/network-request-failed":
-          message = "Network error. Please check your connection and try again.";
-          break;
-      }
-      showAlert("destructive", message);
-    } finally {
-      setLoginLoading(false);
-    }
-  };
+    const handleLogin = async () => {
+        if (!loginEmail || !loginPassword) {
+            showAlert("destructive", "Please fill in both email and password.");
+            return;
+        }
+        setLoginLoading(true);
+        try {
+            await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+            showAlert("success", "Logged in successfully! Redirecting...", true);
+        } catch (error: any) {
+            let message = "An unknown error occurred.";
+            switch (error.code) {
+                case "auth/invalid-credential":
+                case "auth/wrong-password":
+                    message = "Incorrect email or password. Please try again.";
+                    break;
+                case "auth/user-not-found":
+                    message = "No account found with this email. Please sign up.";
+                    break;
+                case "auth/invalid-email":
+                    message = "Please enter a valid email address.";
+                    break;
+                case "auth/network-request-failed":
+                    message = "Network error. Please check your connection and try again.";
+                    break;
+            }
+            showAlert("destructive", message);
+        } finally {
+            setLoginLoading(false);
+        }
+    };
 
   return (
     <>
@@ -284,21 +293,22 @@ export function AuthPage() {
 
       {/* Alert Section - Positioned as an overlay */}
       <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
-        {alert && (
-          <Alert
-            variant={alert.type}
-            withIcon
-            dismissible
-            onDismiss={() => setAlert(null)}
-            className="shadow-lg backdrop-blur-sm"
-          >
-            <AlertTitle>
-              {alert.type === "success" ? "Success" : "Error"}
-            </AlertTitle>
-            <AlertDescription>{alert.message}</AlertDescription>
-          </Alert>
-        )}
-      </div>
+                {alert && (
+                    <Alert
+                        variant={alert.type}
+                        withIcon
+                        dismissible
+                        onDismiss={() => setAlert(null)}
+                        // REMOVED `backdrop-blur-sm` from this className
+                        className="shadow-lg"
+                    >
+                        <AlertTitle>
+                            {alert.type === "success" ? "Success" : "Error"}
+                        </AlertTitle>
+                        <AlertDescription>{alert.message}</AlertDescription>
+                    </Alert>
+                )}
+            </div>
 
       <div className="w-full min-h-screen lg:grid lg:grid-cols-2">
         {/* Left Column */}

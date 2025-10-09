@@ -113,7 +113,7 @@ const Header: React.FC = () => {
           <div className="lg:flex-1 flex justify-start">
             <NavLink to="/" className="flex items-center space-x-2">
               <img src={isDarkMode ? NexusLogoWhite : NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
-              <span className="text-xl font-bold text-foreground">NEXUS</span>
+              <span className="text-xl font-bold text-foreground">NEXUS.CO</span>
             </NavLink>
           </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -9,24 +9,25 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Textarea } from "../components/ui/textarea";
-// Import React Quill and its CSS
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { db, storage } from '@/firebase';
+import { addDoc, collection } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { toast } from "sonner";
 
 const AddProjectPage = () => {
-    // State for all form fields
+    const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [client, setClient] = useState('');
-    const [description, setDescription] = useState(''); // This will be used by the rich text editor
-    const [challenge, setChallenge] = useState(''); // This will be used by the rich text editor
+    const [description, setDescription] = useState('');
+    const [challenge, setChallenge] = useState('');
     const [category, setCategory] = useState('');
     const [services, setServices] = useState('');
-    
-    // State for image preview
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Handler for image selection
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -34,14 +35,73 @@ const AddProjectPage = () => {
             setImagePreview(URL.createObjectURL(file));
         }
     };
-    
-    // Handler to remove the selected image
+
     const handleRemoveImage = () => {
         setImageFile(null);
         setImagePreview(null);
     };
-    
-    // Clean up the object URL to prevent memory leaks
+
+    const generateSlug = (title: string) => {
+        return title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with -
+            .replace(/(^-|-$)+/g, ''); // Remove leading/trailing dashes
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!title || !client || !description || !category || !services || !imageFile) {
+            toast.error("Please fill out all fields and upload an image.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        const toastId = toast.loading("Creating new project...");
+
+        try {
+            // 1. Upload image to Firebase Storage
+            const storageRef = ref(storage, `projects/${Date.now()}_${imageFile.name}`);
+            const snapshot = await uploadBytes(storageRef, imageFile);
+            const imageUrl = await getDownloadURL(snapshot.ref);
+
+            // 2. Prepare data for Firestore
+            const projectData = {
+                title,
+                client,
+                description,
+                challenge, // This is now plain text from textarea
+                category,
+                services: services.split(',').map(s => s.trim()), // Convert comma-separated string to array
+                imageUrl,
+                slug: generateSlug(title),
+                // Add any other fields you need, like `details`
+                details: {
+                    challenge: challenge,
+                    solution: [], // You might want to add form fields for these
+                    results: {
+                        increaseInSales: "N/A",
+                        increaseInTraffic: "N/A",
+                        roas: "N/A",
+                        quote: ""
+                    },
+                    gallery: []
+                }
+            };
+
+            // 3. Add document to Firestore
+            await addDoc(collection(db, "projects"), projectData);
+
+            toast.success("Project created successfully!", { id: toastId });
+            navigate('/admin');
+
+        } catch (error) {
+            console.error("Error creating project:", error);
+            toast.error("Failed to create project. Please try again.", { id: toastId });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     useEffect(() => {
         return () => {
             if (imagePreview) {
@@ -62,8 +122,7 @@ const AddProjectPage = () => {
                         </Link>
                     </div>
 
-                    <form className="grid gap-8 md:grid-cols-3">
-                        {/* Left Column: Main Details */}
+                    <form className="grid gap-8 md:grid-cols-3" onSubmit={handleSubmit}>
                         <div className="grid gap-6 md:col-span-2">
                             <Card>
                                 <CardHeader>
@@ -81,33 +140,16 @@ const AddProjectPage = () => {
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="description" className="text-base">Short Description</Label>
-                                        {/* --- RICH TEXT EDITOR FOR DESCRIPTION --- */}
-                                        <div className="bg-background rounded-md">
-                                            <ReactQuill 
-                                                theme="snow" 
-                                                value={description} 
-                                                onChange={setDescription} 
-                                                placeholder="A brief summary that will appear on the projects page."
-                                            />
-                                        </div>
+                                        <Textarea id="description" placeholder="A brief summary that will appear on the projects page." className="text-base" value={description} onChange={(e) => setDescription(e.target.value)} />
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="challenge" className="text-base">The Challenge</Label>
-                                        {/* --- RICH TEXT EDITOR FOR CHALLENGE --- */}
-                                        <div className="bg-background rounded-md">
-                                            <ReactQuill 
-                                                theme="snow" 
-                                                value={challenge} 
-                                                onChange={setChallenge} 
-                                                placeholder="Describe the client's problem or main challenge."
-                                            />
-                                        </div>
+                                        <Textarea id="challenge" placeholder="Describe the client's problem or main challenge." className="text-base" value={challenge} onChange={(e) => setChallenge(e.target.value)} />
                                     </div>
                                 </CardContent>
                             </Card>
                         </div>
 
-                        {/* Right Column: Metadata & Image */}
                         <div className="grid gap-6 md:col-span-1">
                             <Card>
                                 <CardHeader>
@@ -121,10 +163,14 @@ const AddProjectPage = () => {
                                                 <SelectValue placeholder="Select category" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="e-commerce">E-Commerce Growth</SelectItem>
-                                                <SelectItem value="saas">SaaS Branding</SelectItem>
-                                                <SelectItem value="content">Content Strategy</SelectItem>
-                                                <SelectItem value="ppc">PPC Campaign</SelectItem>
+                                                <SelectItem value="E-Commerce Growth">E-Commerce Growth</SelectItem>
+                                                <SelectItem value="SaaS Branding">SaaS Branding</SelectItem>
+                                                <SelectItem value="Content Strategy">Content Strategy</SelectItem>
+                                                <SelectItem value="PPC Campaign">PPC Campaign</SelectItem>
+                                                <SelectItem value="Mobile App Marketing">Mobile App Marketing</SelectItem>
+                                                <SelectItem value="B2B Lead Generation">B2B Lead Generation</SelectItem>
+                                                <SelectItem value="Video Marketing">Video Marketing</SelectItem>
+                                                <SelectItem value="Email Marketing">Email Marketing</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -141,7 +187,6 @@ const AddProjectPage = () => {
                                     <CardDescription className="text-base">Upload the main image for the project.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    {/* --- IMAGE PREVIEW & MANAGEMENT --- */}
                                     {imagePreview ? (
                                         <div className="relative">
                                             <img src={imagePreview} alt="Project preview" className="w-full h-auto rounded-lg" />
@@ -172,7 +217,9 @@ const AddProjectPage = () => {
                                     )}
                                 </CardContent>
                             </Card>
-                             <Button size="lg" className="w-full btn-primary text-base">Save Project</Button>
+                             <Button type="submit" size="lg" className="w-full btn-primary text-base" disabled={isSubmitting}>
+                                {isSubmitting ? "Saving..." : "Save Project"}
+                            </Button>
                         </div>
                     </form>
                 </div>

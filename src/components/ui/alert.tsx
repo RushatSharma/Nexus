@@ -1,19 +1,18 @@
-
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle, Info, X, AlertTriangle } from "lucide-react";
 
 const alertVariants = {
   variant: {
-    default: "bg-white dark:bg-black text-foreground",
+    default: "bg-background text-foreground",
     destructive:
-      " border-gray-400 dark:border-gray-700/50 text-red-500  [&>svg]:text-destructive",
+      "bg-background border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
     success:
-      "border-green-500/50 text-green-700 dark:text-green-500 [&>svg]:text-green-500",
+      "bg-background border-green-500/50 text-green-700 dark:text-green-500 [&>svg]:text-green-500",
     warning:
-      "border-yellow-500/50 text-yellow-700 dark:text-yellow-500 [&>svg]:text-yellow-500",
+      "bg-background border-yellow-500/50 text-yellow-700 dark:text-yellow-500 [&>svg]:text-yellow-500",
     info:
-      "border-blue-500/50 text-blue-700 dark:text-blue-500 [&>svg]:text-blue-500",
+      "bg-background border-blue-500/50 text-blue-700 dark:text-blue-500 [&>svg]:text-blue-500",
   },
   size: {
     default: "p-4",

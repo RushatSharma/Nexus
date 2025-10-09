@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
@@ -10,43 +10,59 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Badge } from '../components/ui/badge';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/firebase';
 
-// --- Hardcoded Demo User Data ---
-const demoUsers = [
-    {
-        id: '1',
-        name: 'Rushat Sharma',
-        email: 'rushatsharma2501@gmail.com',
-        role: 'admin',
-        avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Rushat%20Sharma',
-    },
-    {
-        id: '2',
-        name: 'Jane Doe',
-        email: 'jane.doe@example.com',
-        role: 'user',
-        avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Jane%20Doe',
-    },
-    {
-        id: '3',
-        name: 'John Smith',
-        email: 'john.smith@example.com',
-        role: 'user',
-        avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=John%20Smith',
-    },
-    {
-        id: '4',
-        name: 'Emily Taylor',
-        email: 'emily.taylor@example.com',
-        role: 'user',
-        avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Emily%20Taylor',
-    },
-];
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: 'admin' | 'user';
+    avatar: string;
+}
 
 const UserManagementPage = () => {
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredUsers = demoUsers.filter(user => 
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const usersCollection = collection(db, 'users');
+                const userSnapshot = await getDocs(usersCollection);
+                const userList = userSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    name: doc.data().name,
+                    email: doc.data().email,
+                    role: doc.data().role,
+                    avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${doc.data().name}`,
+                })) as User[];
+                setUsers(userList);
+            } catch (err) {
+                setError('Failed to fetch users.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
+    }, []);
+
+    const handleRoleChange = async (userId: string, newRole: 'admin' | 'user') => {
+        try {
+            const userDoc = doc(db, 'users', userId);
+            await updateDoc(userDoc, { role: newRole });
+            setUsers(users.map(user => user.id === userId ? { ...user, role: newRole } : user));
+        } catch (err) {
+            setError('Failed to update role.');
+            console.error(err);
+        }
+    };
+
+    const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -72,10 +88,10 @@ const UserManagementPage = () => {
                                 </div>
                                 <div className="relative w-full sm:w-64">
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input 
-                                        type="search" 
-                                        placeholder="Search by name or email..." 
-                                        className="pl-8 w-full text-base" 
+                                    <Input
+                                        type="search"
+                                        placeholder="Search by name or email..."
+                                        className="pl-8 w-full text-base"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
@@ -83,49 +99,58 @@ const UserManagementPage = () => {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="text-base">User</TableHead>
-                                        <TableHead className="hidden sm:table-cell text-base">Role</TableHead>
-                                        <TableHead className="text-base">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredUsers.map((user) => (
-                                        <TableRow key={user.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-4">
-                                                    <Avatar>
-                                                        <AvatarImage src={user.avatar} />
-                                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <p className="font-medium text-foreground text-base">{user.name}</p>
-                                                        <p className="text-base text-muted-foreground">{user.email}</p>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="hidden sm:table-cell">
-                                                 <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="text-sm">
-                                                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                                                 </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Select defaultValue={user.role}>
-                                                    <SelectTrigger className="w-[120px] text-base">
-                                                        <SelectValue placeholder="Change role" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="admin">Admin</SelectItem>
-                                                        <SelectItem value="user">User</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </TableCell>
+                            {loading ? (
+                                <p>Loading users...</p>
+                            ) : error ? (
+                                <p className="text-destructive">{error}</p>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="text-base">User</TableHead>
+                                            <TableHead className="hidden sm:table-cell text-base">Role</TableHead>
+                                            <TableHead className="text-base">Actions</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredUsers.map((user) => (
+                                            <TableRow key={user.id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-4">
+                                                        <Avatar>
+                                                            <AvatarImage src={user.avatar} />
+                                                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium text-foreground text-base">{user.name}</p>
+                                                            <p className="text-base text-muted-foreground">{user.email}</p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="hidden sm:table-cell">
+                                                     <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="text-sm">
+                                                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                                     </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Select
+                                                        defaultValue={user.role}
+                                                        onValueChange={(newRole) => handleRoleChange(user.id, newRole as 'admin' | 'user')}
+                                                    >
+                                                        <SelectTrigger className="w-[120px] text-base">
+                                                            <SelectValue placeholder="Change role" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="admin">Admin</SelectItem>
+                                                            <SelectItem value="user">User</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
