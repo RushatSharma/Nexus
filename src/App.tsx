@@ -16,6 +16,7 @@ import AdminLayout from "./components/AdminLayout";
 import AdminPage from "./pages/AdminPage";
 import AddProjectPage from "./pages/AddProjectPage";
 import UserManagementPage from "./pages/UserManagementPage";
+import ScrollToTop from "./components/ScrollToTop"; // 1. Import the new component
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop /> {/* 2. Add the component here */}
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />

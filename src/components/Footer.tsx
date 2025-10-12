@@ -1,10 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 import NexusLogo from '@/assets/Logo.png'; // Import logo
+import { Link } from 'react-router-dom'; // Import Link
 
 const Footer = () => {
   const footerLinks = {
-    'Quick Links': ['Home', 'About Us', 'Services', 'Portfolio', 'Contact'],
+    'Quick Links': [
+      { name: 'Home', href: '/' },
+      { name: 'About Us', href: '/about' },
+      { name: 'Projects', href: '/projects' },
+      { name: 'Contact', href: '/contact' },
+    ],
     'Services': ['Digital Marketing', 'Social Media Marketing', 'SEO Optimization', 'Content Creation', 'Email Marketing'],
     'Resources': ['Blog', 'Case Studies', 'Whitepapers', 'Webinars', 'FAQs'],
   };
@@ -68,13 +74,16 @@ const Footer = () => {
                 <h3 className="text-lg font-semibold text-white">{title}</h3>
                 <ul className="space-y-3">
                   {links.map((link) => (
-                    <li key={link}>
-                      <a
-                        href="#"
-                        className="text-gray-300 hover:text-primary transition-colors duration-200"
-                      >
-                        {link}
-                      </a>
+                    <li key={typeof link === 'string' ? link : link.name}>
+                      {typeof link === 'string' ? (
+                        <a href="#" className="text-gray-300 hover:text-primary transition-colors duration-200">
+                          {link}
+                        </a>
+                      ) : (
+                        <Link to={link.href} className="text-gray-300 hover:text-primary transition-colors duration-200">
+                          {link.name}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>

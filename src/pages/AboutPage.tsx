@@ -192,9 +192,6 @@ const AboutPage = () => {
                   <div className="flex-shrink-0">{value.icon}</div>
                   <h3 className="mt-6 text-xl font-bold text-foreground">{value.title}</h3>
                   <p className="mt-2 text-muted-foreground">{value.description}</p>
-                  <a href="#" className="mt-4 inline-flex items-center font-semibold text-primary">
-                    Read More <ArrowRight className="w-4 h-4 ml-2" />
-                  </a>
                 </div>
               ))}
             </div>
