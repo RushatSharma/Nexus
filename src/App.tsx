@@ -27,7 +27,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <ScrollToTop /> {/* 2. Add the component here */}
+          <ScrollToTop /> 
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />

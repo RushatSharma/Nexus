@@ -3,53 +3,62 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Sun, Moon, LogOut, User as UserIcon } from 'lucide-react';
 import NexusLogo from '@/assets/Logo.png';
-import NexusLogoWhite from '@/assets/LogoNavWhite.png'; 
-import { useAuth } from '@/hooks/useAuth';
-import { auth } from '@/firebase';
-import { signOut } from 'firebase/auth';
+import NexusLogoWhite from '@/assets/LogoNavWhite.png';
+import { useAuth } from '@/hooks/useAuth'; // Now uses Supabase context
+import { supabase } from '@/supabaseClient'; // Import Supabase client
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner'; // Optional: for logout feedback
 
+// --- ProfileButton Component (Now simpler) ---
 const ProfileButton = () => {
+    // useAuth now provides Supabase user and profile data
     const { currentUser, userData } = useAuth();
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // Still needed for Manage Account link
 
-    const handleLogout = async () => {
-        await signOut(auth);
-        navigate('/');
-    };
-    
-    const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('') : '';
-    const getFirstName = (name: string) => name ? name.split(' ')[0] : 'User';
+    // Logout function is now passed from Header or called directly there
+
+    // Helper functions remain the same
+    const getInitials = (name: string | undefined): string => name ? name.split(' ').map(n => n[0]).join('') : '';
+    const getFirstName = (name: string | undefined): string => name ? name.split(' ')[0] : 'User';
+
+    // Get logout handler from Header via props or context if preferred,
+    // For simplicity, we'll assume Header's handleLogout is accessible or re-created.
+    // Let's use the one defined in Header below.
 
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="ghost" className="rounded-full w-10 h-10">
-                    <Avatar>
-                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} />
-                        <AvatarFallback>{userData?.name ? getInitials(userData.name) : 'U'}</AvatarFallback>
+                <Button variant="ghost" className="rounded-full w-10 h-10 p-0"> {/* Adjusted padding */}
+                    <Avatar className="w-9 h-9"> {/* Slightly smaller avatar */}
+                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} alt={userData?.name || 'User Avatar'}/>
+                        <AvatarFallback>{getInitials(userData?.name)}</AvatarFallback>
                     </Avatar>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64">
+            <PopoverContent className="w-64 mr-4"> {/* Added margin for better placement */}
                 <div className="flex flex-col items-center text-center p-2">
                     <Avatar className="w-16 h-16 mb-2">
-                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} />
-                        <AvatarFallback className="text-2xl">{userData?.name ? getInitials(userData.name) : 'U'}</AvatarFallback>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} alt={userData?.name || 'User Avatar'}/>
+                        <AvatarFallback className="text-2xl">{getInitials(userData?.name)}</AvatarFallback>
                     </Avatar>
-                    <p className="font-semibold text-lg">Hi, {userData?.name ? getFirstName(userData.name) : 'User'}!</p>
-                    <p className="text-sm text-muted-foreground mb-4">{currentUser?.email}</p>
-                    
+                    <p className="font-semibold text-lg">Hi, {getFirstName(userData?.name)}!</p>
+                    <p className="text-sm text-muted-foreground mb-4 break-all">{currentUser?.email}</p> {/* Added break-all */}
+
                     <NavLink to="/account" className="w-full">
                         <Button variant="default" className="w-full btn-primary mb-2">
                            <UserIcon className="w-4 h-4 mr-2" />
                             Manage Account
                         </Button>
                     </NavLink>
-                    <Button variant="outline" className="w-full" onClick={handleLogout}>
+                    {/* Logout Button in Popover - now calls Header's logout */}
+                    <Button variant="outline" className="w-full" onClick={async () => {
+                         const { error } = await supabase.auth.signOut();
+                         if (error) { console.error("Logout Error:", error); toast.error(`Logout failed: ${error.message}`); }
+                         else { navigate('/'); toast.success("Logged out successfully!"); }
+                    }}>
                         <LogOut className="w-4 h-4 mr-2" />
                         Logout
                     </Button>
@@ -59,6 +68,8 @@ const ProfileButton = () => {
     )
 }
 
+
+// --- Header Component (Contains shared logout logic) ---
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -66,8 +77,23 @@ const Header: React.FC = () => {
     return savedTheme === 'dark';
   });
   const { currentUser, isAdmin, userData } = useAuth();
+  const navigate = useNavigate(); // Needed for logout navigation
 
-  // Base navigation links
+  // --- Shared Logout Logic ---
+  const handleLogout = async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+          console.error("Logout Error:", error);
+          toast.error(`Logout failed: ${error.message}`);
+      } else {
+          setIsMenuOpen(false); // Close mobile menu if open
+          navigate('/');
+          toast.success("Logged out successfully!"); // Optional feedback
+      }
+  };
+
+
+  // Base navigation links remain the same
   const baseNavigation = [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/about' },
@@ -75,20 +101,18 @@ const Header: React.FC = () => {
     { name: 'Contact Us', href: '/contact' },
   ];
 
-  // Dynamically build navigation based on auth state
+  // Dynamically build navigation (logic remains the same)
   const getNavigation = () => {
     let nav = [...baseNavigation];
-    if (currentUser) {
-      nav.push({ name: 'Account', href: '/account' });
-    }
-    if (isAdmin) {
+    if (isAdmin) { // isAdmin flag comes from Supabase context now
       nav.push({ name: 'Admin', href: '/admin' });
     }
     return nav;
   };
-  
+
   const navigation = getNavigation();
 
+  // Theme effect remains the same
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -99,17 +123,21 @@ const Header: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  // Theme toggle function remains the same
   const toggleTheme = () => {
     setIsDarkMode(prevMode => !prevMode);
   };
 
-  const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('') : '';
+   // Get initials function remains the same
+  const getInitials = (name: string | undefined): string => name ? name.split(' ').map(n => n[0]).join('') : '';
 
+
+  // JSX structure remains largely the same
   return (
     <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="container-custom">
         <div className="relative flex items-center justify-between h-16 lg:h-20">
-          
+
           <div className="lg:flex-1 flex justify-start">
             <NavLink to="/" className="flex items-center space-x-2">
               <img src={isDarkMode ? NexusLogoWhite : NexusLogo} alt="NEXUS Logo" className="h-8 w-auto" />
@@ -143,8 +171,10 @@ const Header: React.FC = () => {
             >
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-            
+
+            {/* Conditional rendering based on Supabase currentUser */}
             {currentUser ? (
+              // ProfileButton no longer needs handleLogout passed if we handle it inside or make it global/contextual
               <ProfileButton />
             ) : (
               <div className="flex items-center gap-2">
@@ -155,63 +185,94 @@ const Header: React.FC = () => {
             )}
           </div>
 
+          {/* Mobile Menu Button */}
           <div className="lg:hidden">
             <button
               className="p-2 rounded-md text-foreground"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
 
+        {/* Mobile Menu Panel */}
         {isMenuOpen && (
           <div className="absolute left-0 w-full lg:hidden bg-background/95 backdrop-blur-sm p-4 border-t border-border shadow-md">
             <nav className="flex flex-col space-y-1">
+              {/* User info in mobile menu */}
               {currentUser && (
                 <>
                   <div className="px-3 py-2 flex items-center gap-3">
                     <Avatar>
-                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} />
-                        <AvatarFallback>{userData?.name ? getInitials(userData.name) : 'U'}</AvatarFallback>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'A'}`} alt={userData?.name || 'User Avatar'}/>
+                        <AvatarFallback>{getInitials(userData?.name)}</AvatarFallback>
                     </Avatar>
                     <div>
                         <p className="font-semibold text-foreground">{userData?.name || "User"}</p>
-                        <p className="text-sm text-muted-foreground">{currentUser.email}</p>
+                        <p className="text-sm text-muted-foreground break-all">{currentUser.email}</p> {/* Added break-all */}
                     </div>
                   </div>
                   <Separator className="my-2"/>
+                   {/* Add Manage Account Link for logged-in users in mobile */}
+                   <NavLink
+                     to="/account"
+                     className={({ isActive }) =>
+                       cn(
+                         "text-foreground hover:text-primary px-3 py-2 rounded-md",
+                         isActive && "bg-secondary text-primary font-semibold"
+                       )
+                     }
+                     onClick={() => setIsMenuOpen(false)}
+                   >
+                     Manage Account
+                   </NavLink>
                 </>
               )}
 
+              {/* Navigation links */}
               {navigation.map((item) => (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  className={({ isActive }) =>
-                    cn(
-                      "text-foreground hover:text-primary px-3 py-2 rounded-md",
-                      isActive && "bg-secondary text-primary font-semibold"
-                    )
-                  }
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </NavLink>
+                // Exclude Account link if user is logged in, as it's added above manually
+                (!currentUser || item.href !== '/account') && (
+                  <NavLink
+                    key={item.name}
+                    to={item.href}
+                    className={({ isActive }) =>
+                      cn(
+                        "text-foreground hover:text-primary px-3 py-2 rounded-md",
+                        isActive && "bg-secondary text-primary font-semibold"
+                      )
+                    }
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </NavLink>
+                )
               ))}
 
+              {/* Signup button if not logged in */}
               {!currentUser && (
                 <NavLink to="/signup" onClick={() => setIsMenuOpen(false)}>
                     <Button className="btn-primary w-full mt-2">Sign Up</Button>
                 </NavLink>
               )}
 
+              {/* Theme toggle and Logout (if logged in) */}
               <div className="pt-3 border-t border-border mt-2">
-                 <div className="px-3 pt-2">
-                    <Button variant="outline" className="w-full" onClick={toggleTheme}>
+                 <div className="px-3 pt-2 space-y-2"> {/* Added space-y-2 */}
+                    <Button variant="outline" className="w-full" onClick={() => { toggleTheme(); /* No need to close menu */ }}>
                         {isDarkMode ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
                         Toggle Theme
                     </Button>
+                    {/* Add Logout Button in mobile if logged in */}
+                    {currentUser && (
+                       <Button variant="outline" className="w-full" onClick={handleLogout}> {/* Calls Header's logout */}
+                           <LogOut className="w-4 h-4 mr-2" />
+                           Logout
+                       </Button>
+                    )}
                  </div>
               </div>
             </nav>
@@ -223,4 +284,3 @@ const Header: React.FC = () => {
 };
 
 export default Header;
-
