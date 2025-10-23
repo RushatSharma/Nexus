@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useState, useContext, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js'; // Import Supabase types
-import { supabase } from '../supabaseClient'; // Import your initialized Supabase client
+import { Session, User } from '@supabase/supabase-js';
+import { supabase } from '../supabaseClient';
 
 // Define the shape of the user data fetched from your 'users' table
 export interface UserData {
@@ -8,10 +8,9 @@ export interface UserData {
   name?: string;
   organization?: string;
   role?: 'admin' | 'user';
-  // Add other fields from your 'users' table if needed
 }
 
-// Update the context type
+// Define the shape of the context value
 export interface AuthContextType {
   currentUser: User | null; // Supabase User type
   session: Session | null; // Supabase Session type
@@ -20,7 +19,7 @@ export interface AuthContextType {
   isAdmin: boolean;
 }
 
-// Export the context so the hook can use it
+// Create the context with an initial value of null
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 // Provider component that wraps the app
@@ -28,103 +27,128 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true); // Start as true
+  const [loading, setLoading] = useState(true); // Start loading initially
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    console.log("AuthProvider useEffect started"); // <-- Log Start
+    let initialCheckDone = false; // Flag to prevent race condition with initial getSession
 
-    let initialCheckDone = false; // Flag to manage initial loading state
-
-    // 1. Check for initial session synchronously
+    // Attempt to get the initial session synchronously
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      console.log("Initial getSession completed. Session:", initialSession); // <-- Log Initial Session
-      // Only set initial state if the listener hasn't run yet
+      // Only set initial state if the listener hasn't already run
       if (!initialCheckDone) {
         setSession(initialSession);
         setCurrentUser(initialSession?.user ?? null);
-        // Don't set loading false here, wait for listener + profile fetch
+         // If there's no initial session, we might be done loading early
+        if (!initialSession) {
+            setLoading(false);
+            initialCheckDone = true;
+        }
       }
+    }).catch(error => {
+        // Handle potential error during initial session fetch
+        console.error("Error fetching initial session:", error);
+         if (!initialCheckDone) {
+             setLoading(false); // Assume done loading if initial check fails
+             initialCheckDone = true;
+         }
     });
 
-    // 2. Set up the auth state change listener
+    // Set up the listener for authentication state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, currentSession) => {
         initialCheckDone = true; // Mark that the listener has taken over
-        console.log("onAuthStateChange triggered. Event:", _event, "Session:", currentSession); // <-- Log Auth Change
         setSession(currentSession);
         const user = currentSession?.user ?? null;
         setCurrentUser(user);
 
-        // Reset user data and admin status if logged out
+        // If user logs out
         if (!user) {
-          console.log("No user session found by listener."); // <-- Log No User
           setUserData(null);
           setIsAdmin(false);
-          console.log("Setting loading to false (no user)."); // <-- Log Loading False
-          setLoading(false); // Auth status known
+          setLoading(false); // Finished loading (logged out state)
           return;
         }
 
-        // Fetch user profile data from 'users' table if logged in
-        console.log("User session found, attempting to fetch profile for user ID:", user.id); // <-- Log Profile Fetch Start
-        // setLoading(true); // Don't reset loading to true here unless necessary, causes flicker
+        // If user is logged in, fetch or create their profile
+        // setLoading(true); // Optionally set loading true again if profile fetch is slow
         try {
-          const { data, error, status } = await supabase
-            .from('users') // Your table name
-            .select(`name, organization, role`) // Select specific columns
-            .eq('id', user.id) // Match the user ID
-            .single(); // Expect only one row
+          // 1. Attempt to fetch existing profile data from 'users' table
+          const { data, error: fetchError, status } = await supabase
+            .from('users')
+            .select(`name, organization, role`) // Select only needed profile fields
+            .eq('id', user.id) // Match the authenticated user's ID
+            .single(); // Expect exactly one row or null
 
-          console.log("Profile fetch result:", { data, error, status }); // <-- Log Profile Result
-
-          if (error && status !== 406) { // 406 means no row found
-            console.error('Error fetching user data:', error);
-            throw error;
+          // Handle potential fetch errors (excluding 'not found')
+          if (fetchError && status !== 406) { // 406 specifically means row not found
+            console.error('Error fetching user profile:', fetchError);
+            throw fetchError;
           }
 
+          // 2. If profile data exists, update the state
           if (data) {
-            console.log("Setting user data:", data); // <-- Log User Data Set
             setUserData(data as UserData);
             setIsAdmin(data.role === 'admin');
-            console.log("Is Admin:", data.role === 'admin'); // <-- Log Admin Status
-          } else {
-            console.warn("User profile data not found in 'users' table."); // <-- Log Profile Not Found
-            setUserData(null);
-            setIsAdmin(false);
           }
+          // 3. If profile data does NOT exist (status 406), create it
+          else if (status === 406) {
+            console.warn("User profile not found in 'users' table, attempting to create...");
+
+            // Get name/org from signup metadata (if provided) or generate defaults
+            const profileName = user.user_metadata?.name || user.email?.split('@')[0] || 'New User';
+            const profileOrg = user.user_metadata?.organization || null;
+
+            const newUserProfile: UserData = {
+                id: user.id,
+                name: profileName,
+                organization: profileOrg,
+                role: 'user' // Default role for new signups
+            };
+
+            // Insert the new profile into the 'users' table
+            const { error: insertError } = await supabase
+              .from('users')
+              .insert({
+                  id: user.id, // Ensure ID matches the auth user ID
+                  name: profileName,
+                  email: user.email, // Include email in the table
+                  organization: profileOrg,
+                  role: 'user'
+              });
+
+            if (insertError) {
+              // If insert fails (e.g., RLS policy prevents it unexpectedly)
+              console.error("Error creating user profile after signup:", insertError);
+              setUserData(null); // Ensure userData is null if profile creation failed
+              setIsAdmin(false);
+            } else {
+              // If insert succeeds, update the state with the new profile data
+              console.log("User profile created successfully.");
+              setUserData(newUserProfile);
+              setIsAdmin(false); // New users default to 'user' role
+            }
+          }
+
         } catch (error) {
-          console.error('Failed to fetch or process user profile:', error); // <-- Keep Error Log
-          setUserData(null);
-          setIsAdmin(false);
+          // Catch errors from fetch or the insert attempt
+          console.error('Failed during profile fetch/create process:', error);
+          setUserData(null); // Reset user data on error
+          setIsAdmin(false); // Reset admin status on error
         } finally {
-          // This should be the final point where loading becomes false after auth state is known AND profile is fetched/attempted
-          console.log("Setting loading to false (after user check/profile fetch)."); // <-- Log Final Loading False
+          // Always set loading to false after attempting to fetch/create profile
           setLoading(false);
         }
       }
     );
 
-    // Initial loading state check - if no session detected quickly by listener, set loading false
-    // This handles the case where the user is definitely logged out.
-    const timer = setTimeout(() => {
-        if (!initialCheckDone && !session && !currentUser) {
-            console.log("Timeout check: No session detected quickly, setting loading false.");
-             setLoading(false);
-        }
-    }, 500); // Adjust timeout if needed
-
-
-    // Cleanup function
+    // Cleanup function to unsubscribe the listener when the component unmounts
     return () => {
-      console.log("AuthProvider useEffect cleanup"); // <-- Log Cleanup
-      clearTimeout(timer); // Clear the timeout
       subscription?.unsubscribe();
     };
-  }, []); // Run only once on mount
+  }, []); // Empty dependency array ensures this effect runs only once on mount
 
-  console.log("AuthProvider rendering. Loading state:", loading); // <-- Log Render State
-
+  // The value provided to consuming components
   const value = {
     currentUser,
     session,
@@ -133,14 +157,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isAdmin,
   };
 
-  // Render children only when the initial loading is complete
+  // Render children only after the initial loading is complete
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
-// Custom hook remains the same, but AuthContextType is updated
+// Custom hook to easily consume the context
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === null) { // Explicit check for null
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
