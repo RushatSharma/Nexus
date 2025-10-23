@@ -12,21 +12,22 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner'; // Optional: for logout feedback
 
-// --- ProfileButton Component (Now simpler) ---
+// --- ProfileButton Component ---
 const ProfileButton = () => {
     // useAuth now provides Supabase user and profile data
     const { currentUser, userData } = useAuth();
-    const navigate = useNavigate(); // Still needed for Manage Account link
-
-    // Logout function is now passed from Header or called directly there
+    const navigate = useNavigate();
 
     // Helper functions remain the same
     const getInitials = (name: string | undefined): string => name ? name.split(' ').map(n => n[0]).join('') : '';
     const getFirstName = (name: string | undefined): string => name ? name.split(' ')[0] : 'User';
 
-    // Get logout handler from Header via props or context if preferred,
-    // For simplicity, we'll assume Header's handleLogout is accessible or re-created.
-    // Let's use the one defined in Header below.
+    // Logout handler specific to this button (or call a shared one if needed)
+    const handlePopoverLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) { console.error("Logout Error:", error); toast.error(`Logout failed: ${error.message}`); }
+        else { navigate('/'); toast.success("Logged out successfully!"); }
+    };
 
     return (
         <Popover>
@@ -53,12 +54,8 @@ const ProfileButton = () => {
                             Manage Account
                         </Button>
                     </NavLink>
-                    {/* Logout Button in Popover - now calls Header's logout */}
-                    <Button variant="outline" className="w-full" onClick={async () => {
-                         const { error } = await supabase.auth.signOut();
-                         if (error) { console.error("Logout Error:", error); toast.error(`Logout failed: ${error.message}`); }
-                         else { navigate('/'); toast.success("Logged out successfully!"); }
-                    }}>
+                    {/* Logout Button in Popover */}
+                    <Button variant="outline" className="w-full" onClick={handlePopoverLogout}>
                         <LogOut className="w-4 h-4 mr-2" />
                         Logout
                     </Button>
@@ -69,7 +66,7 @@ const ProfileButton = () => {
 }
 
 
-// --- Header Component (Contains shared logout logic) ---
+// --- Header Component ---
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -77,23 +74,24 @@ const Header: React.FC = () => {
     return savedTheme === 'dark';
   });
   const { currentUser, isAdmin, userData } = useAuth();
-  const navigate = useNavigate(); // Needed for logout navigation
+  console.log("Header rendering. currentUser:", currentUser); // <-- ADDED DEBUG LOG
+  const navigate = useNavigate();
 
-  // --- Shared Logout Logic ---
-  const handleLogout = async () => {
+  // --- Shared Logout Logic for Mobile Menu ---
+  const handleMobileLogout = async () => {
       const { error } = await supabase.auth.signOut();
       if (error) {
           console.error("Logout Error:", error);
           toast.error(`Logout failed: ${error.message}`);
       } else {
-          setIsMenuOpen(false); // Close mobile menu if open
+          setIsMenuOpen(false); // Close mobile menu
           navigate('/');
-          toast.success("Logged out successfully!"); // Optional feedback
+          toast.success("Logged out successfully!");
       }
   };
 
 
-  // Base navigation links remain the same
+  // Base navigation links
   const baseNavigation = [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/about' },
@@ -101,10 +99,10 @@ const Header: React.FC = () => {
     { name: 'Contact Us', href: '/contact' },
   ];
 
-  // Dynamically build navigation (logic remains the same)
+  // Dynamically build navigation
   const getNavigation = () => {
     let nav = [...baseNavigation];
-    if (isAdmin) { // isAdmin flag comes from Supabase context now
+    if (isAdmin) {
       nav.push({ name: 'Admin', href: '/admin' });
     }
     return nav;
@@ -112,7 +110,7 @@ const Header: React.FC = () => {
 
   const navigation = getNavigation();
 
-  // Theme effect remains the same
+  // Theme effect
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -123,16 +121,16 @@ const Header: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  // Theme toggle function remains the same
+  // Theme toggle function
   const toggleTheme = () => {
     setIsDarkMode(prevMode => !prevMode);
   };
 
-   // Get initials function remains the same
+   // Get initials function
   const getInitials = (name: string | undefined): string => name ? name.split(' ').map(n => n[0]).join('') : '';
 
 
-  // JSX structure remains largely the same
+  // JSX
   return (
     <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="container-custom">
@@ -174,8 +172,7 @@ const Header: React.FC = () => {
 
             {/* Conditional rendering based on Supabase currentUser */}
             {currentUser ? (
-              // ProfileButton no longer needs handleLogout passed if we handle it inside or make it global/contextual
-              <ProfileButton />
+              <ProfileButton /> // ProfileButton handles its own popover and logout
             ) : (
               <div className="flex items-center gap-2">
                 <NavLink to="/signup">
@@ -212,11 +209,11 @@ const Header: React.FC = () => {
                     </Avatar>
                     <div>
                         <p className="font-semibold text-foreground">{userData?.name || "User"}</p>
-                        <p className="text-sm text-muted-foreground break-all">{currentUser.email}</p> {/* Added break-all */}
+                        <p className="text-sm text-muted-foreground break-all">{currentUser.email}</p>
                     </div>
                   </div>
                   <Separator className="my-2"/>
-                   {/* Add Manage Account Link for logged-in users in mobile */}
+                   {/* Add Manage Account Link */}
                    <NavLink
                      to="/account"
                      className={({ isActive }) =>
@@ -234,7 +231,7 @@ const Header: React.FC = () => {
 
               {/* Navigation links */}
               {navigation.map((item) => (
-                // Exclude Account link if user is logged in, as it's added above manually
+                // Exclude Account link if user is logged in
                 (!currentUser || item.href !== '/account') && (
                   <NavLink
                     key={item.name}
@@ -261,14 +258,14 @@ const Header: React.FC = () => {
 
               {/* Theme toggle and Logout (if logged in) */}
               <div className="pt-3 border-t border-border mt-2">
-                 <div className="px-3 pt-2 space-y-2"> {/* Added space-y-2 */}
-                    <Button variant="outline" className="w-full" onClick={() => { toggleTheme(); /* No need to close menu */ }}>
+                 <div className="px-3 pt-2 space-y-2">
+                    <Button variant="outline" className="w-full" onClick={toggleTheme}>
                         {isDarkMode ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
                         Toggle Theme
                     </Button>
-                    {/* Add Logout Button in mobile if logged in */}
+                    {/* Add Logout Button */}
                     {currentUser && (
-                       <Button variant="outline" className="w-full" onClick={handleLogout}> {/* Calls Header's logout */}
+                       <Button variant="outline" className="w-full" onClick={handleMobileLogout}>
                            <LogOut className="w-4 h-4 mr-2" />
                            Logout
                        </Button>

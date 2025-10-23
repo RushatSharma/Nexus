@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // Import Supabase client
-import { supabase } from "../supabaseClient";
+import { supabase } from "@/supabaseClient"; // Corrected path
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  CheckCircle,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -17,11 +18,12 @@ import {
   Sun,
   X,
 } from "lucide-react";
-import AuthIllustration from "@/assets/Auth.png";
-import AuthIllustrationWhite from "@/assets/AuthWhite.png";
-import NexusLogo from "@/assets/Logo.png";
+import AuthIllustration from "@/assets/Auth.png"; // Corrected path
+import AuthIllustrationWhite from "@/assets/AuthWhite.png"; // Corrected path
+import NexusLogo from "@/assets/Logo.png"; // Corrected path
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth to check initial state
 
 const OrDivider = () => (
     <div className="flex items-center my-2">
@@ -33,8 +35,6 @@ const OrDivider = () => (
     </div>
 );
 
-// Note: Supabase social logins require configuration in the Supabase dashboard
-// and potentially different client-side logic. Keeping buttons for now.
 const SocialLogins = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Button variant="outline" disabled>Google (Coming Soon)</Button>
@@ -42,7 +42,7 @@ const SocialLogins = () => (
     </div>
 );
 
-// AuthHeader remains mostly the same, only used for layout and theme toggle
+// AuthHeader (no changes needed from previous version)
 const AuthHeader = ({ isDarkMode, toggleTheme }: { isDarkMode: boolean; toggleTheme: () => void }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigation = [
@@ -164,9 +164,10 @@ export function AuthPage() {
     const [showLoginPassword, setShowLoginPassword] = useState(false);
     const [showSignupPassword, setShowSignupPassword] = useState(false);
     const navigate = useNavigate();
+    const { currentUser, loading: authLoading } = useAuth(); // Get current user state
 
-    // Theme toggling logic remains the same
-    const toggleTheme = () => {
+    // Theme toggling logic
+    const toggleTheme = () => { /* ... same as before ... */
         setIsDarkMode((prevMode) => {
             const newMode = !prevMode;
             if (newMode) {
@@ -178,7 +179,7 @@ export function AuthPage() {
         });
     };
 
-    useEffect(() => {
+    useEffect(() => { /* ... same observer as before ... */
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.attributeName === "class") {
@@ -190,88 +191,73 @@ export function AuthPage() {
         return () => observer.disconnect();
     }, []);
 
+     // Effect to redirect if user is already logged in when visiting this page
+     useEffect(() => {
+        if (!authLoading && currentUser) {
+            console.log("AuthPage: User already logged in, redirecting to /");
+            navigate('/');
+        }
+     }, [currentUser, authLoading, navigate]);
+
     const [alert, setAlert] = useState<{
         type: "success" | "destructive";
         message: string;
     } | null>(null);
 
-    // showAlert function remains the same
-    const showAlert = (
-        type: "success" | "destructive",
-        message: string,
-        redirect = false
-    ) => {
+    // showAlert function
+    const showAlert = (type: "success" | "destructive", message: string) => { /* ... same as before ... */
         setAlert({ type, message });
-        if (redirect) {
-            setTimeout(() => {
-                setAlert(null);
-                navigate("/"); // Navigate after successful login/signup
-            }, 1500); // Short delay for user to see success message
-        } else {
-            // Auto-dismiss error alerts after a few seconds
-            setTimeout(() => setAlert(null), 4000);
-        }
+        setTimeout(() => setAlert(null), 4000);
     };
 
-    // --- Supabase Signup Logic ---
-    const handleSignup = async () => {
+    // --- Supabase Signup Logic (No changes needed here) ---
+    const handleSignup = async () => { /* ... same as before ... */
         if (!signupEmail || !signupPassword || !signupName) {
             showAlert("destructive", "Please fill in Name, Email, and Password.");
             return;
         }
         setSignupLoading(true);
-        setError(null); // Clear previous errors
+        setError(null);
 
         try {
-            // Step 1: Sign up the user with Supabase Auth
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: signupEmail,
                 password: signupPassword,
             });
 
-            if (authError) throw authError; // Throw if Supabase Auth signup fails
+            if (authError) throw authError;
 
-            // Check if user object exists (should exist if no error)
             const user = authData.user;
             if (!user) {
                 throw new Error("Signup successful but user data is missing.");
             }
 
-            // Step 2: Insert user profile data into the 'users' table
-            // Link the profile to the auth user via the user.id
             const { error: insertError } = await supabase
-                .from('users') // Your table name
+                .from('users')
                 .insert({
-                    id: user.id, // Foreign key linking to auth.users table
+                    id: user.id,
                     name: signupName,
-                    email: signupEmail, // Store email here too for easier querying if needed
-                    organization: signupOrg || null, // Handle optional field
-                    role: 'user' // Default role
+                    email: signupEmail,
+                    organization: signupOrg || null,
+                    role: 'user'
                 });
 
             if (insertError) {
-                // Handle potential profile insertion errors (e.g., if RLS prevents it)
                 console.error("Error inserting user profile:", insertError);
-                // Optionally: try to delete the auth user if profile creation fails critically
-                // await supabase.auth.admin.deleteUser(user.id); // Requires admin privileges - cannot do from client-side
                 throw new Error(`Account created, but failed to save profile: ${insertError.message}`);
             }
 
-            // Show success message - Supabase usually requires email confirmation
             showAlert(
               "success",
               "Account created! Please check your email to confirm your address before logging in."
             );
-            // Optionally clear form fields
             setSignupName('');
             setSignupOrg('');
             setSignupEmail('');
             setSignupPassword('');
-            // Don't redirect automatically, user needs to confirm email first
 
         } catch (error: any) {
             console.error("Signup Error:", error);
-            // Provide more specific Supabase error messages if possible
             let message = error.message || "An unknown signup error occurred.";
             if (error.message.includes("User already registered")) {
                 message = "An account with this email already exists. Please log in.";
@@ -282,16 +268,16 @@ export function AuthPage() {
         } finally {
             setSignupLoading(false);
         }
-    };
+     };
 
-    // --- Supabase Login Logic ---
+    // --- Supabase Login Logic (REMOVED EXPLICIT NAVIGATE) ---
     const handleLogin = async () => {
         if (!loginEmail || !loginPassword) {
             showAlert("destructive", "Please enter both email and password.");
             return;
         }
         setLoginLoading(true);
-        setError(null); // Clear previous errors
+        setError(null);
 
         try {
             const { error } = await supabase.auth.signInWithPassword({
@@ -301,15 +287,13 @@ export function AuthPage() {
 
             if (error) throw error;
 
-            // AuthContext listener will handle fetching user data and redirecting
-            // Show temporary success message here before context handles navigation
-             showAlert("success", "Logged in successfully! Redirecting...");
-             // No need to call navigate('/') here directly if AuthContext handles it
+            // AuthContext will now handle redirection via its onAuthStateChange listener
+            showAlert("success", "Logged in successfully! Redirecting...");
+            // No navigate('/') here anymore
 
         } catch (error: any) {
              console.error("Login Error:", error);
-            // Provide more specific Supabase error messages
-            let message = error.message || "An unknown login error occurred.";
+             let message = error.message || "An unknown login error occurred.";
              if (error.message.includes("Invalid login credentials")) {
                 message = "Incorrect email or password. Please try again.";
             } else if (error.message.includes("Email not confirmed")) {
@@ -322,7 +306,13 @@ export function AuthPage() {
     };
     const [error, setError] = useState<string | null>(null);
 
-    // JSX structure remains largely the same, only button onClick handlers change
+     // If auth is still loading or user is logged in (and redirect hasn't happened yet), show minimal UI or null
+     if (authLoading || (!authLoading && currentUser)) {
+        // You could show a spinner here if authLoading is true
+        return null; // Avoid rendering the form if already logged in or initial check ongoing
+     }
+
+    // JSX structure
     return (
         <>
             <AuthHeader isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
@@ -332,12 +322,10 @@ export function AuthPage() {
                 {alert && (
                     <Alert
                         variant={alert.type}
-                        // Removed withIcon prop as we add icon manually below for better control
                         dismissible
                         onDismiss={() => setAlert(null)}
-                        className="shadow-lg flex items-start" // Use flex for icon alignment
+                        className="shadow-lg flex items-start"
                     >
-                         {/* Manually add icon */}
                          {alert.type === 'success' && <CheckCircle className="h-5 w-5 mr-3 text-green-500 flex-shrink-0" />}
                          {alert.type === 'destructive' && <X className="h-5 w-5 mr-3 text-destructive flex-shrink-0" />}
                         <div>
@@ -354,41 +342,42 @@ export function AuthPage() {
             <div className="w-full min-h-screen lg:grid lg:grid-cols-2">
                 {/* Left Column (Illustration) */}
                 <div className="hidden lg:flex flex-col items-center justify-center p-12 bg-background">
-                   <div className="text-center space-y-8">
-                      <img
-                        src={isDarkMode ? AuthIllustrationWhite : AuthIllustration}
-                        alt="Marketing Illustration"
-                        className="w-full max-w-sm mx-auto"
-                      />
-                      <h1 className="text-4xl font-bold leading-tight text-foreground">
-                        Unlock Your Brand's Potential
-                      </h1>
-                      {/* ... rest of the illustration section ... */}
-                       <div className="text-left max-w-md mx-auto space-y-4">
-                           <p className="text-lg text-muted-foreground">
-                               Join a community of forward-thinking brands and gain access to
-                               tools that will elevate your marketing game.
-                           </p>
-                           <ul className="space-y-2 text-muted-foreground">
-                               <li className="flex items-start">
-                                   <CheckCircle2 className="w-5 h-5 mr-2 mt-1 text-primary flex-shrink-0" />
-                                   Access data-driven insights and analytics to fuel your
-                                   growth.
-                               </li>
-                               <li className="flex items-start">
-                                   <CheckCircle2 className="w-5 h-5 mr-2 mt-1 text-primary flex-shrink-0" />
-                                   Collaborate with our experts to unlock your brand's creative
-                                   potential.
-                               </li>
-                           </ul>
-                       </div>
+                   {/* ... same illustration content ... */}
+                    <div className="text-center space-y-8">
+                        <img
+                            src={isDarkMode ? AuthIllustrationWhite : AuthIllustration}
+                            alt="Marketing Illustration"
+                            className="w-full max-w-sm mx-auto"
+                        />
+                        <h1 className="text-4xl font-bold leading-tight text-foreground">
+                            Unlock Your Brand's Potential
+                        </h1>
+                        <div className="text-left max-w-md mx-auto space-y-4">
+                            <p className="text-lg text-muted-foreground">
+                                Join a community of forward-thinking brands and gain access to
+                                tools that will elevate your marketing game.
+                            </p>
+                            <ul className="space-y-2 text-muted-foreground">
+                                <li className="flex items-start">
+                                    <CheckCircle2 className="w-5 h-5 mr-2 mt-1 text-primary flex-shrink-0" />
+                                    Access data-driven insights and analytics to fuel your
+                                    growth.
+                                </li>
+                                <li className="flex items-start">
+                                    <CheckCircle2 className="w-5 h-5 mr-2 mt-1 text-primary flex-shrink-0" />
+                                    Collaborate with our experts to unlock your brand's creative
+                                    potential.
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
                 {/* Right Column (Auth Forms) */}
                 <div className="flex flex-col items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:p-8 bg-background">
                     <div className="w-full max-w-md">
-                        <div className="text-center mb-6">
+                        {/* ... same header ... */}
+                         <div className="text-center mb-6">
                             <h2 className="text-3xl font-bold tracking-tight text-foreground">
                                 Access Your Account
                             </h2>
@@ -398,6 +387,7 @@ export function AuthPage() {
                         </div>
 
                         <Tabs defaultValue="login" className="w-full">
+                            {/* ... same TabsList ... */}
                             <TabsList className="grid w-full grid-cols-2">
                                 <TabsTrigger value="login">Login</TabsTrigger>
                                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -405,9 +395,11 @@ export function AuthPage() {
 
                             {/* Login Tab */}
                             <TabsContent value="login" className="mt-4">
+                                {/* ... same Card structure ... */}
                                 <Card className="border-none shadow-none bg-transparent">
                                     <CardContent className="space-y-4 p-0">
-                                        <div className="space-y-2">
+                                        {/* ... Input fields ... */}
+                                         <div className="space-y-2">
                                             <Label htmlFor="login-email">Email</Label>
                                             <Input
                                                 id="login-email"
@@ -415,18 +407,12 @@ export function AuthPage() {
                                                 placeholder="m@example.com"
                                                 value={loginEmail}
                                                 onChange={(e) => setLoginEmail(e.target.value)}
-                                                required // Added required
+                                                required
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <Label htmlFor="login-password">Password</Label>
-                                                {/* <Link // Simplified: removed forgot password for now
-                                                    to="#"
-                                                    className="text-sm font-medium text-primary hover:underline"
-                                                >
-                                                    Forgot password?
-                                                </Link> */}
                                             </div>
                                             <div className="relative">
                                                 <Input
@@ -434,7 +420,7 @@ export function AuthPage() {
                                                     type={showLoginPassword ? "text" : "password"}
                                                     value={loginPassword}
                                                     onChange={(e) => setLoginPassword(e.target.value)}
-                                                    required // Added required
+                                                    required
                                                 />
                                                 <button
                                                     type="button"
@@ -448,7 +434,7 @@ export function AuthPage() {
                                         </div>
                                         <Button
                                             className="w-full btn-primary"
-                                            onClick={handleLogin} // Use updated Supabase handler
+                                            onClick={handleLogin} // Uses login handler (no navigate)
                                             disabled={loginLoading}
                                         >
                                             {loginLoading ? "Logging in..." : "Login"}
@@ -461,7 +447,8 @@ export function AuthPage() {
 
                             {/* Signup Tab */}
                             <TabsContent value="signup" className="mt-4">
-                                <Card className="border-none shadow-none bg-transparent">
+                                {/* ... same Card structure and fields ... */}
+                                 <Card className="border-none shadow-none bg-transparent">
                                     <CardContent className="space-y-3 p-0">
                                         <div className="space-y-2">
                                             <Label htmlFor="signup-name">Full Name</Label>
@@ -470,7 +457,7 @@ export function AuthPage() {
                                                 placeholder="John Doe"
                                                 value={signupName}
                                                 onChange={(e) => setSignupName(e.target.value)}
-                                                required // Added required
+                                                required
                                             />
                                         </div>
                                          <div className="space-y-2">
@@ -490,7 +477,7 @@ export function AuthPage() {
                                                 placeholder="m@example.com"
                                                 value={signupEmail}
                                                 onChange={(e) => setSignupEmail(e.target.value)}
-                                                required // Added required
+                                                required
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -501,8 +488,8 @@ export function AuthPage() {
                                                     type={showSignupPassword ? "text" : "password"}
                                                     value={signupPassword}
                                                     onChange={(e) => setSignupPassword(e.target.value)}
-                                                    required // Added required
-                                                    minLength={6} // Added minLength for basic validation
+                                                    required
+                                                    minLength={6}
                                                 />
                                                 <button
                                                     type="button"
@@ -518,7 +505,7 @@ export function AuthPage() {
                                         <div className="pt-2">
                                             <Button
                                                 className="w-full btn-primary"
-                                                onClick={handleSignup} // Use updated Supabase handler
+                                                onClick={handleSignup}
                                                 disabled={signupLoading}
                                             >
                                                 {signupLoading ? "Creating..." : "Create Account"}
@@ -536,8 +523,3 @@ export function AuthPage() {
         </>
     );
 }
-
-// NOTE: Remember to remove the old Firebase imports if they were present at the top
-// e.g., import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-// e.g., import { auth, db } from "../firebase";
-// e.g., import { doc, setDoc } from "firebase/firestore";

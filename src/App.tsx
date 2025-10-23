@@ -16,18 +16,19 @@ import AdminLayout from "./components/AdminLayout";
 import AdminPage from "./pages/AdminPage";
 import AddProjectPage from "./pages/AddProjectPage";
 import UserManagementPage from "./pages/UserManagementPage";
-import ScrollToTop from "./components/ScrollToTop"; // 1. Import the new component
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToTop /> 
+      {/* BrowserRouter now wraps AuthProvider */}
+      <BrowserRouter>
+        <AuthProvider>
+          <ScrollToTop />
+          <Toaster />
+          <Sonner />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
@@ -38,7 +39,7 @@ const App = () => (
             <Route path="/login" element={<AuthPage />} />
             <Route path="/signup" element={<AuthPage />} />
             <Route path="/account" element={<AccountPage />} />
-            
+
             {/* Admin Routes */}
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminPage />} />
@@ -49,8 +50,8 @@ const App = () => (
             {/* Not Found Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
