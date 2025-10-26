@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
 All colors MUST be HSL.
 */
 
@@ -133,7 +133,7 @@ All colors MUST be HSL.
   html {
     scroll-behavior: smooth;
   }
-  
+
   /* Custom Scrollbar for Webkit Browsers */
   ::-webkit-scrollbar {
     width: 10px;
@@ -189,3 +189,149 @@ All colors MUST be HSL.
     color: hsl(var(--dark-foreground));
   }
 }
+
+/* --- Loading Spinner Styles --- */
+
+:root {
+  --spinner-color: hsl(var(--primary));
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  background-color: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.loading-content {
+  width: 25vmin;
+  height: 25vmin;
+  perspective: 100vmin;
+  animation: spin-all 4s ease-in-out infinite;
+}
+
+.loading-cube {
+  background: var(--spinner-color);
+  width: 10vmin;
+  height: 10vmin;
+  left: 7.25vmin;
+  top: 2.5vmin;
+  border-radius: 2vmin;
+  transform: rotate(48deg) rotateX(22.5deg) rotateY(-22.5deg);
+  position: absolute;
+  transition: all 1s ease 0s;
+  transform-style: preserve-3d;
+  animation: spin-cube 2s ease-in-out -3s infinite alternate;
+}
+
+.loading-cube::before {
+  position: absolute;
+  content: "";
+  background: var(--spinner-color);
+  width: calc(100% - 1vmin);
+  height: calc(100% - 1vmin);
+  top: 1.25vmin;
+  left: 2vmin;
+  border-radius: 2vmin;
+  transform: rotateY(-90deg);
+  transform-origin: right bottom;
+  transition: all 1s ease 0s;
+  animation-name: spin-cube-before;
+  animation: spin-cube-before 2s ease-in-out -3s infinite alternate;
+}
+
+.loading-cube::after {
+  position: absolute;
+  content: "";
+  background: var(--spinner-color);
+  width: calc(100% - 1vmin);
+  height: calc(100% - 1vmin);
+  top: 2vmin;
+  left: 1.25vmin;
+  border-radius: 2vmin;
+  transform: rotateX(90deg);
+  transform-origin: right bottom;
+  transition: all 1s ease 0s;
+  animation-name: spin-cube-after;
+  animation: spin-cube-after 2s ease-in-out -3s infinite alternate;
+}
+
+@keyframes spin-all {
+  50%,
+  100% {
+    transform: rotate(720deg);
+  }
+}
+
+@keyframes spin-cube {
+  0%,
+  50% {
+    border-radius: 100%;
+    transform: rotate(39deg) rotateX(0deg) rotateY(0deg);
+    /* --- REDUCED SIZE & Adjusted Position --- */
+    left: 10.75vmin; /* Was 10vmin */
+    top: 6vmin;    /* Was 5vmin */
+    width: 3vmin;    /* Was 5vmin */
+    height: 3vmin;   /* Was 5vmin */
+  }
+  50%,
+  100% {
+    border-radius: 2vmin;
+    transform: rotate(48deg) rotateX(22.5deg) rotateY(-22.5deg);
+    left: 7.25vmin;
+    top: 2.5vmin;
+    width: 10vmin;
+    height: 10vmin;
+  }
+}
+
+@keyframes spin-cube-before {
+  0%,
+  50% {
+    border-radius: 100%;
+    transform: rotateY(-180deg) rotateX(0deg);
+     /* --- REDUCED SIZE & Adjusted Position (Relative to parent cube's circle phase) --- */
+    left: 3.5vmin;  /* Adjusted position */
+    top: 4.5vmin;   /* Adjusted position */
+    width: 100%;   /* Kept 100% - relative to parent element size */
+    height: 100%;  /* Kept 100% - relative to parent element size */
+  }
+  50%,
+  100% {
+    border-radius: 2vmin;
+    transform: rotateY(-90deg);
+    left: 2vmin;
+    top: 1.25vmin;
+    width: calc(100% - 1vmin);
+    height: calc(100% - 1vmin);
+  }
+}
+
+@keyframes spin-cube-after {
+  0%,
+  50% {
+    border-radius: 100%;
+    transform: rotateY(0deg) rotateX(180deg);
+     /* --- REDUCED SIZE & Adjusted Position (Relative to parent cube's circle phase) --- */
+    left: 1.5vmin; /* Adjusted position */
+    top: 6.5vmin;  /* Adjusted position */
+    width: 100%;   /* Kept 100% - relative to parent element size */
+    height: 100%;  /* Kept 100% - relative to parent element size */
+  }
+  50%,
+  100% {
+    border-radius: 2vmin;
+    transform: rotateX(90deg);
+    left: 1.25vmin;
+    top: 2vmin;
+    width: calc(100% - 1vmin);
+    height: calc(100% - 1vmin);
+  }
+}
+
+/* --- End Loading Spinner Styles --- */
+

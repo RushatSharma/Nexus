@@ -8,13 +8,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "../hooks/use-mobile";
 import { useDrag } from '@use-gesture/react';
 
+// Import local assets
+import howwework1 from "@/assets/howwework1.webp";
+import howwework2 from "@/assets/howwework2.webp";
+import howwework3 from "@/assets/howwework3.webp";
+import howwework4 from "@/assets/howwework4.webp";
+
 export interface ThreeDCarouselItem {
   id: number;
   title: string;
   step: string;
   description: string;
   tags: string[];
-  imageUrl: string;
+  imageUrl: string; // Keep as string, will hold the imported image variable
 }
 
 interface ThreeDCarouselProps {
@@ -23,7 +29,7 @@ interface ThreeDCarouselProps {
   rotateInterval?: number;
 }
 
-// Data for the carousel cards
+// Data for the carousel cards - UPDATED imageUrl paths
 const processItems: ThreeDCarouselItem[] = [
   {
     id: 1,
@@ -32,7 +38,7 @@ const processItems: ThreeDCarouselItem[] = [
     description:
       "We start by diving deep into your business, goals, and industry to build a custom marketing roadmap designed for success.",
     tags: ["Research", "Analysis", "Planning"],
-    imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    imageUrl: howwework1, // Use imported variable
   },
   {
     id: 2,
@@ -41,7 +47,7 @@ const processItems: ThreeDCarouselItem[] = [
     description:
       "Our expert team executes the strategy with precision, launching campaigns and creating compelling content to capture your audience.",
     tags: ["Execution", "Content Creation", "Campaigns"],
-    imageUrl: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    imageUrl: howwework2, // Use imported variable
   },
   {
     id: 3,
@@ -50,7 +56,7 @@ const processItems: ThreeDCarouselItem[] = [
     description:
       "We constantly monitor performance and analyze data, making data-driven adjustments to optimize for the best possible results.",
     tags: ["Monitoring", "Data Analysis", "Optimization"],
-    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    imageUrl: howwework3, // Use imported variable
   },
   {
     id: 4,
@@ -59,7 +65,7 @@ const processItems: ThreeDCarouselItem[] = [
     description:
       "You get transparent, easy-to-understand reports on our progress, and we work with you to scale success and find new growth opportunities.",
     tags: ["Reporting", "Growth", "Scaling"],
-    imageUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    imageUrl: howwework4, // Use imported variable
   },
 ];
 
@@ -146,6 +152,7 @@ const ThreeDCarousel = ({
                 )}`}
               >
                 <Card className="overflow-hidden bg-background h-[450px] border shadow-lg flex flex-col">
+                  {/* Background image style now uses the imported variable */}
                   <div
                     className="relative bg-black p-6 flex items-center justify-center h-48 overflow-hidden"
                     style={{

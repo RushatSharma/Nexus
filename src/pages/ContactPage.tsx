@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'; // Add useEffect here
+import { useState, useRef, useEffect } from 'react';
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { Mail, Phone, MapPin, CheckCircle } from "lucide-react";
@@ -20,7 +20,8 @@ const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const MESSAGES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_MESSAGES_COLLECTION_ID;
 // --- ---
 
-export function ContactPage() {
+// Changed export to default
+export default function ContactPage() {
     const { currentUser } = useAuth();
     const [service, setService] = useState('');
     const [message, setMessage] = useState('');
@@ -251,4 +252,5 @@ export function ContactPage() {
     );
 }
 
-// export default ContactPage; // Use if needed
+// Removed default export from the bottom, added it to the function declaration
+// export default ContactPage;

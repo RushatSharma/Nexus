@@ -1,59 +1,71 @@
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import ProjectsPage from "./pages/ProjectsPage";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ContactPage } from "./pages/ContactPage";
-import { AuthPage } from "./pages/AuthPage";
-import AccountPage from "./pages/AccountPage";
-import AboutPage from "./pages/AboutPage";
-import CaseStudyPage from "./pages/CaseStudyPage";
-import AdminLayout from "./components/AdminLayout";
-import AdminPage from "./pages/AdminPage";
-import AddProjectPage from "./pages/AddProjectPage";
-import UserManagementPage from "./pages/UserManagementPage";
 import ScrollToTop from "./components/ScrollToTop";
-import EditProjectPage from './pages/EditProjectPage';
-import AdminMessagesPage from './pages/AdminMessagesPage';
+import NotFound from "./pages/NotFound"; // Keep NotFound imported directly
+
+// Import the new LoadingSpinner
+import LoadingSpinner from './components/LoadingSpinner';
+
+// --- Lazy load page components ---
+const Index = lazy(() => import('./pages/Index'));
+const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const AccountPage = lazy(() => import('./pages/AccountPage'));
+const CaseStudyPage = lazy(() => import('./pages/CaseStudyPage'));
+const AdminLayout = lazy(() => import('./components/AdminLayout'));
+// Lazy load components *inside* AdminLayout if needed for further optimization
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const AddProjectPage = lazy(() => import("./pages/AddProjectPage"));
+const UserManagementPage = lazy(() => import("./pages/UserManagementPage"));
+const EditProjectPage = lazy(() => import('./pages/EditProjectPage'));
+const AdminMessagesPage = lazy(() => import('./pages/AdminMessagesPage'));
+// --- ---
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      {/* BrowserRouter now wraps AuthProvider */}
       <BrowserRouter>
         <AuthProvider>
-          <ScrollToTop />
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/projects" element={<ProjectsPage />} />
-            <Route path="/projects/:projectSlug" element={<CaseStudyPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<AuthPage />} />
-            <Route path="/signup" element={<AuthPage />} />
-            <Route path="/account" element={<AccountPage />} />
+          {/* --- Use LoadingSpinner as Suspense fallback --- */}
+          <Suspense fallback={<LoadingSpinner />}>
+            <ScrollToTop />
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/projects/:projectSlug" element={<CaseStudyPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/login" element={<AuthPage />} />
+              <Route path="/signup" element={<AuthPage />} />
+              <Route path="/account" element={<AccountPage />} />
 
-            {/* Admin Routes */}
-            <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/admin/projects/new" element={<AddProjectPage />} />
-              <Route path="/admin/users" element={<UserManagementPage />} />
-              <Route path="/admin/projects/edit/:projectId" element={<EditProjectPage />} />
-              <Route path="/admin/messages" element={<AdminMessagesPage />} />
-            </Route>
+              {/* Admin Routes */}
+              <Route element={<AdminLayout />}>
+                {/* Wrap inner admin routes in Suspense if lazy loaded */}
+                 <Route path="/admin" element={<AdminPage />} />
+                 <Route path="/admin/projects/new" element={<AddProjectPage />} />
+                 <Route path="/admin/users" element={<UserManagementPage />} />
+                 <Route path="/admin/projects/edit/:projectId" element={<EditProjectPage />} />
+                 <Route path="/admin/messages" element={<AdminMessagesPage />} />
+              </Route>
 
-            {/* Not Found Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* Not Found Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+          {/* --- End Suspense --- */}
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

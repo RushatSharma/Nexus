@@ -20,9 +20,9 @@ import {
     Sun,
     X,
 } from "lucide-react";
-import AuthIllustration from "@/assets/Auth.png";
-import AuthIllustrationWhite from "@/assets/AuthWhite.png";
-import NexusLogo from "@/assets/Logo.png";
+import AuthIllustration from "@/assets/AuthBlack.webp";
+import AuthIllustrationWhite from "@/assets/AuthWhite.webp";
+import NexusLogo from "@/assets/Logo.webp";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth"; // Still used to check if already logged in

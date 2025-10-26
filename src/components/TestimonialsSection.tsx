@@ -2,90 +2,105 @@ import { Star, Quote } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+// Import local assets for testimonials
+import Testimony1 from "@/assets/Testimony1.webp";
+import Testimony2 from "@/assets/Testimony2.webp";
+import Testimony3 from "@/assets/Testimony3.webp";
+import Testimony4 from "@/assets/Testimony4.webp";
+import Testimony5 from "@/assets/Testimony5.webp";
+import Testimony6 from "@/assets/Testimony6.webp";
+import Testimony7 from "@/assets/Testimony7.webp";
+import Testimony8 from "@/assets/Testimony8.webp";
+import Testimony9 from "@/assets/Testimony9.webp";
+import Testimony10 from "@/assets/Testimony10.webp";
+import Testimony11 from "@/assets/Testimony11.webp";
+import Testimony12 from "@/assets/Testimony12.webp";
+
+
 const TestimonialsSection = () => {
   const testimonials = [
     {
       name: 'Kartika Sharma',
       company: 'Small Business Owner',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=47',
+      avatar: Testimony1, // Updated
       testimonial: "I Can't Be Happier With The Results. The Digital Marketing Expertise Has Significantly Boosted Our Online Presence, Resulting In Increased Traffic And Revenue."
     },
     {
       name: 'John Walker',
       company: 'Creative Director',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=60',
+      avatar: Testimony2, // Updated
       testimonial: "Their Innovative Digital Marketing Strategies Have Not Only Increased Our Website Traffic By Miles, But Also Significantly Boosted Our Conversions."
     },
     {
         name: 'Samantha Lee',
         company: 'E-commerce Manager',
         rating: 5,
-        avatar: 'https://i.pravatar.cc/150?img=25',
+        avatar: Testimony3, // Updated
         testimonial: "Working with this team was a game-changer for our online store. Their targeted PPC campaigns and SEO strategy doubled our sales in just one quarter."
     },
     {
         name: 'David Chen',
         company: 'Startup Founder',
         rating: 5,
-        avatar: 'https://i.pravatar.cc/150?img=12',
+        avatar: Testimony4, // Updated
         testimonial: "As a new startup, we needed a marketing partner who understood our vision. They delivered a brilliant branding package that has been instrumental in our growth."
     },
     {
         name: 'Maria Garcia',
         company: 'Marketing Director',
         rating: 5,
-        avatar: 'https://i.pravatar.cc/150?img=31',
+        avatar: Testimony5, // Updated
         testimonial: "The level of detail from this team is unparalleled. Their monthly analytics reports are incredibly insightful and have helped us make much smarter marketing decisions."
     },
     {
         name: 'James Wilson',
         company: 'Real Estate Agent',
         rating: 5,
-        avatar: 'https://i.pravatar.cc/150?img=57',
+        avatar: Testimony6, // Updated
         testimonial: "I was struggling to generate leads online, but their content marketing and local SEO efforts have put me on the map. I'm now getting consistent, high-quality inquiries."
     },
     {
       name: 'Olivia Martinez',
       company: 'Restaurant Owner',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=32',
+      avatar: Testimony7, // Updated
       testimonial: "Our social media engagement has skyrocketed since we started working with them. They truly understand our brand's voice and connect with our customers."
     },
     {
       name: 'Benjamin Harris',
       company: 'Tech CEO',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=56',
+      avatar: Testimony8, // Updated
       testimonial: "Their team is professional, responsive, and incredibly knowledgeable. They are a true extension of our in-house marketing department. Highly recommend their services."
     },
     {
       name: 'Chloe Thompson',
       company: 'Fashion Blogger',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=49',
+      avatar: Testimony9, // Updated
       testimonial: "They helped me grow my audience and secure major brand collaborations. Their understanding of influencer marketing is second to none. A fantastic experience."
     },
     {
       name: 'William Anderson',
       company: 'Financial Advisor',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=63',
+      avatar: Testimony10, // Updated
       testimonial: "The content they produce for our blog is top-notch. It's well-researched, engaging, and has established us as a thought leader in our industry."
     },
     {
       name: 'Sophia Rodriguez',
       company: 'Non-Profit Coordinator',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=43',
+      avatar: Testimony11, // Updated
       testimonial: "Their team helped us increase our online donations by over 200% through a targeted social media campaign. We couldn't be more grateful for their support."
     },
     {
       name: 'Liam Martinez',
       company: 'Lead Developer',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=68',
+      avatar: Testimony12, // Updated
       testimonial: "The SEO audit they conducted was incredibly thorough. They identified key areas for improvement that have led to a significant increase in our organic search traffic."
     }
   ];
@@ -131,6 +146,7 @@ const TestimonialsSection = () => {
 
                     <div className="flex items-center space-x-4 pt-4 mt-6 border-t border-border">
                       <Avatar>
+                        {/* Updated AvatarImage src */}
                         <AvatarImage src={testimonial.avatar} />
                         <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                       </Avatar>
@@ -153,4 +169,3 @@ const TestimonialsSection = () => {
 };
 
 export default TestimonialsSection;
-

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
-import NexusLogo from '@/assets/Logo.png'; // Import logo
+import NexusLogo from '@/assets/Logo.webp'; // Import logo
 import { Link } from 'react-router-dom'; // Import Link
 
 const Footer = () => {

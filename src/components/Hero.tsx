@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
-import heroImage from '@/assets/hero.png';
+import heroImage from '@/assets/hero.webp';
 import { Link } from 'react-router-dom';
 import { AuroraTextEffect } from './AuroraTextEffect'; // Make sure this path is correct
 import { cn } from '@/lib/utils';
