@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { databases } from '@/appwriteClient'; // Only import what your file actually exports
+import { databases, storage } from '@/appwriteClient'; // Only import what your file actually exports
 import { Query, Models, AppwriteException } from 'appwrite';
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from 'sonner';
