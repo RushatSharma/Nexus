@@ -21,11 +21,32 @@
 
     <link rel="canonical" href="https://nexus.com" />
     <link rel="icon" href="/favicon.ico" />
+
+    <!-- === START: Inline Theme Script === -->
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          // Apply 'dark' if saved theme is 'dark' OR if no theme saved and system prefers dark
+          if (theme === 'dark' || (!theme && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          } else {
+             // Explicitly remove 'dark' if theme is 'light' or system prefers light
+             document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          console.error("Error applying initial theme:", e);
+        }
+      })();
+    </script>
+    <!-- === END: Inline Theme Script === -->
+
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 
-    </body>
+  </body>
 </html>
