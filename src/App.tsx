@@ -17,6 +17,8 @@ import AdminPage from "./pages/AdminPage";
 import AddProjectPage from "./pages/AddProjectPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import ScrollToTop from "./components/ScrollToTop";
+import EditProjectPage from './pages/EditProjectPage';
+import AdminMessagesPage from './pages/AdminMessagesPage';
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,8 @@ const App = () => (
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/admin/projects/new" element={<AddProjectPage />} />
               <Route path="/admin/users" element={<UserManagementPage />} />
+              <Route path="/admin/projects/edit/:projectId" element={<EditProjectPage />} />
+              <Route path="/admin/messages" element={<AdminMessagesPage />} />
             </Route>
 
             {/* Not Found Route */}

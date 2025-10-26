@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useAuth } from '@/hooks/useAuth'; // Now provides Supabase user/data
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -11,119 +11,121 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/supabaseClient'; // Import Supabase client
+import { databases, account } from '@/appwriteClient'; // Only import what your file actually exports
+import { Query, Models, AppwriteException } from 'appwrite';
+import { toast } from 'sonner';
 
-// Interface for messages fetched from Supabase
-interface Message {
-    id: number; // Assuming 'id' is bigint/int8 in Supabase
+// --- Environment Variables ---
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const MESSAGES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_MESSAGES_COLLECTION_ID;
+// --- ---
+
+interface Message extends Models.Document {
+    userId: string;
+    email: string;
     service: string;
     message: string;
     status: string;
-    created_at: string | null; // Supabase timestamp is typically returned as string
-    user_id?: string; // Optional, just for type consistency if needed
-    email?: string; // Optional, just for type consistency if needed
+    reply?: string | null;
+    repliedAt?: string | null;
 }
 
 const AccountPage = () => {
-  // useAuth now provides Supabase user and profile data
   const { currentUser, userData, loading } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [messagesLoading, setMessagesLoading] = useState(true);
-  const [messagesError, setMessagesError] = useState<string | null>(null); // State for message fetching errors
+  // --- *** THE FIX IS HERE *** ---
+  const [messagesLoading, setMessagesLoading] = useState(false); // Start false
+  // --- *** ---
+  const [messagesError, setMessagesError] = useState<string | null>(null);
+  const [hasFetchedMessages, setHasFetchedMessages] = useState(false);
 
-  // Logout using Supabase
+  // handleLogout
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-        console.error("Error logging out:", error);
-        // Optionally show an error to the user
-    }
-    navigate('/'); // Navigate home after logout attempt
+      try { await account.deleteSession('current'); navigate('/'); } catch (error) { console.error("Error logging out:", error); }
   };
 
-  // Get initials function remains the same
+  // getInitials
   const getInitials = (name: string | undefined) => name ? name.split(' ').map(n => n[0]).join('') : '';
 
-  // Fetch messages from Supabase
+  // fetchMessages
   const fetchMessages = async () => {
-    if (!currentUser) return;
-    setMessagesLoading(true);
-    setMessagesError(null); // Clear previous errors
+    // Guard clause: Now, messagesLoading will be false here on first run
+    if (!currentUser || messagesLoading || hasFetchedMessages) return;
+
+    setMessagesLoading(true); // <-- Set loading TRUE now
+    setMessagesError(null);
+    if (!DATABASE_ID || !MESSAGES_COLLECTION_ID) {
+        setMessagesError("Configuration error."); setLoading(false); setHasFetchedMessages(true); return;
+    }
     try {
-        // Select messages for the current user, ordered by creation date
-        const { data, error } = await supabase
-            .from('messages') // Your messages table name
-            .select('*') // Select all columns
-            .eq('user_id', currentUser.id) // Filter by the logged-in user's ID
-            .order('created_at', { ascending: false }); // Order newest first
-
-        if (error) {
-            throw error; // Throw if there's an error fetching
-        }
-
-        // Set the fetched messages (data might be null if no messages)
-        setMessages(data || []);
-
+        const response = await databases.listDocuments(
+            DATABASE_ID, MESSAGES_COLLECTION_ID,
+            [ Query.equal('userId', currentUser.$id), Query.orderDesc('$createdAt') ]
+        );
+        setMessages(response.documents as Message[]);
     } catch (error: any) {
-        console.error("Error fetching messages: ", error);
-        setMessagesError(`Failed to load messages: ${error.message || 'Please try again.'}`);
-        setMessages([]); // Clear messages on error
+        let msg = `Failed to load messages: ${error.message || 'Unknown'}`;
+        if (error instanceof AppwriteException && (error.code === 401 || error.code === 403)) { msg = "Permission denied."; }
+        setMessagesError(msg); setMessages([]); toast.error(msg);
     } finally {
-        setMessagesLoading(false);
+        setMessagesLoading(false); // <-- Set loading FALSE on completion
+        setHasFetchedMessages(true);
     }
   };
 
-  // Effect to redirect if not logged in (remains the same logic)
+  // useEffect (redirect)
   useEffect(() => {
-    if (!loading && !currentUser) {
-      navigate('/login');
-    }
+    if (!loading && !currentUser) { navigate('/login'); }
   }, [loading, currentUser, navigate]);
 
-  // Loading skeleton remains the same
-   if (loading) {
-    return (
-      <div className="flex flex-col min-h-screen bg-background">
-        <Header />
-        <main className="flex-1 container-custom py-12">
-           <div className="grid gap-8 md:grid-cols-3">
-              <div className="md:col-span-1 flex flex-col items-center text-center">
-                <Skeleton className="w-24 h-24 rounded-full mb-4" />
-                <Skeleton className="h-8 w-48 mb-2" />
-                <Skeleton className="h-5 w-56" />
-                <Skeleton className="h-10 w-full max-w-[240px] mt-6" />
-                <Skeleton className="h-10 w-full max-w-[240px] mt-2" />
-              </div>
-              <div className="md:col-span-2">
-                <Skeleton className="h-96 w-full" />
-              </div>
-           </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  // useEffect (fetch on load) - This will now work correctly
+  useEffect(() => {
+    if (!loading && currentUser && !hasFetchedMessages) {
+      fetchMessages();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, currentUser]);
 
-  if (!currentUser) return null; // Should be redirected by useEffect, but good practice
-
-  // Helper to format Supabase timestamp string
+  // formatTimestamp
   const formatTimestamp = (timestamp: string | null): string => {
       if (!timestamp) return 'N/A';
-      try {
-          return new Date(timestamp).toLocaleString();
-      } catch (e) {
-          return 'Invalid Date';
-      }
-  }
+      try { return new Date(timestamp).toLocaleString(); } catch (e) { return 'Invalid Date'; }
+  };
 
-  // JSX structure remains mostly the same, data sources are updated
+  // Loading skeleton (for auth)
+   if (loading) {
+     return (
+            <div className="flex flex-col min-h-screen bg-background">
+                <Header />
+                <main className="flex-1 container-custom py-12">
+                <div className="grid gap-8 md:grid-cols-3">
+                    <div className="md:col-span-1 flex flex-col items-center text-center">
+                        <Skeleton className="w-24 h-24 rounded-full mb-4" />
+                        <Skeleton className="h-8 w-48 mb-2" />
+                        <Skeleton className="h-5 w-56" />
+                        <Skeleton className="h-10 w-full max-w-[240px] mt-6" />
+                        <Skeleton className="h-10 w-full max-w-[240px] mt-2" />
+                    </div>
+                    <div className="md:col-span-2">
+                        <Skeleton className="h-96 w-full" />
+                    </div>
+                </div>
+                </main>
+                <Footer />
+            </div>
+       );
+   }
+
+  if (!currentUser) return null;
+
+  // --- JSX (No changes needed from last version) ---
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1 container-custom py-12">
         <div className="grid gap-12 md:grid-cols-4">
-          {/* Left Column (Profile Summary) - Uses userData from AuthContext */}
+          {/* Left Column */}
           <div className="md:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
             <Avatar className="w-24 h-24 mb-4">
               <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData?.name || 'User'}`} />
@@ -131,7 +133,6 @@ const AccountPage = () => {
             </Avatar>
             <h2 className="text-3xl font-bold text-foreground">{userData?.name || "User"}</h2>
             <p className="text-base text-muted-foreground break-all">{currentUser?.email}</p>
-            {/* Logout button now uses Supabase handler */}
             <Button onClick={handleLogout} variant="destructive" className="w-full mt-6 md:w-auto">
               <LogOut className="w-4 h-4 mr-2" />
               Logout
@@ -146,14 +147,19 @@ const AccountPage = () => {
                   <UserCircle className="w-4 h-4 mr-2" />
                   Profile
                 </TabsTrigger>
-                <TabsTrigger value="messages" onClick={fetchMessages}> {/* Fetch messages on tab click */}
+                <TabsTrigger
+                  value="messages"
+                  onClick={() => {
+                    if (!hasFetchedMessages && !messagesLoading) fetchMessages();
+                  }}
+                >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Messages
                 </TabsTrigger>
               </TabsList>
 
-              <div className="mt-6 h-[520px] w-full"> {/* Fixed height container */}
-                {/* Profile Tab - Uses userData from AuthContext */}
+              <div className="mt-6 h-[520px] w-full">
+                {/* Profile Tab */}
                 <TabsContent value="profile" className="h-full m-0">
                   <Card className="h-full w-full">
                     <CardHeader>
@@ -163,7 +169,7 @@ const AccountPage = () => {
                     <CardContent className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="name" className="text-base">Name</Label>
-                        <Input id="name" type="text" value={userData?.name || 'N/A'} readOnly className="bg-muted text-base" />
+                        <Input id="name" type="text" value={userData?.name || 'Loading...'} readOnly className="bg-muted text-base" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-base">Email</Label>
@@ -185,31 +191,44 @@ const AccountPage = () => {
                   </Card>
                 </TabsContent>
 
-                {/* Messages Tab - Fetches and displays messages from Supabase */}
+                {/* Messages Tab */}
                 <TabsContent value="messages" className="h-full m-0">
                   <Card className="h-full w-full flex flex-col">
                     <CardHeader>
                         <CardTitle className="text-3xl">Message History</CardTitle>
                         <CardDescription className="text-base">A list of messages you've sent via the contact form.</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex-1 space-y-4 overflow-y-auto pr-2"> {/* Scrollable content */}
+                    <CardContent className="flex-1 space-y-4 overflow-y-auto pr-2">
                         {messagesLoading ? (
-                            <div className="space-y-3"> {/* Use multiple skeletons for better loading state */}
-                                <Skeleton className="h-20 w-full" />
-                                <Skeleton className="h-20 w-full" />
-                                <Skeleton className="h-20 w-full" />
+                            <div className="space-y-3">
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
                             </div>
                         ) : messagesError ? (
                             <p className="text-destructive text-center py-8">{messagesError}</p>
                         ) : messages.length > 0 ? (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {messages.map(msg => (
-                                    <div key={msg.id} className="p-4 bg-muted rounded-md border">
-                                        <p className="text-lg font-semibold text-primary capitalize">{msg.service}</p>
-                                        <p className="text-base text-foreground mb-1 break-words">{msg.message}</p> {/* Added break-words */}
-                                        <p className="text-sm text-muted-foreground">
-                                            Status: <span className="capitalize font-medium">{msg.status}</span> | Sent: {formatTimestamp(msg.created_at)}
-                                        </p>
+                                    <div key={msg.$id} className="p-4 bg-muted rounded-lg border space-y-3">
+                                        {/* Original Message */}
+                                        <div>
+                                            <p className="text-lg font-semibold text-primary capitalize">{msg.service}</p>
+                                            <p className="text-base text-foreground mb-1 break-words whitespace-pre-wrap">{msg.message}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                Status: <span className="capitalize font-medium">{msg.status}</span> | Sent: {formatTimestamp(msg.$createdAt)}
+                                            </p>
+                                        </div>
+
+                                        {/* Admin's Reply (Conditional) */}
+                                        {msg.reply && msg.status === 'replied' && (
+                                            <div className="border-t border-border/50 pt-3 pl-4 border-l-2 border-l-primary/70">
+                                                <p className="text-base font-semibold text-foreground">Reply from Nexus:</p>
+                                                <p className="text-base text-muted-foreground mb-1 break-words whitespace-pre-wrap">{msg.reply}</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Replied: {formatTimestamp(msg.repliedAt || null)}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-// Import Supabase client
-import { supabase } from "@/supabaseClient"; // Corrected path
+// 1. Import Appwrite account and ID, remove supabase
+import { databases, ID } from '@/appwriteClient';
+import { account} from '@/appwriteClient';
+import { AppwriteException } from 'appwrite'; // Optional: for specific error codes
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,23 +10,26 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
-  CheckCircle,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  Menu,
-  Moon,
-  Sun,
-  X,
+    ArrowLeft,
+    CheckCircle,
+    CheckCircle2,
+    Eye,
+    EyeOff,
+    Menu,
+    Moon,
+    Sun,
+    X,
 } from "lucide-react";
-import AuthIllustration from "@/assets/Auth.png"; // Corrected path
-import AuthIllustrationWhite from "@/assets/AuthWhite.png"; // Corrected path
-import NexusLogo from "@/assets/Logo.png"; // Corrected path
+import AuthIllustration from "@/assets/Auth.png";
+import AuthIllustrationWhite from "@/assets/AuthWhite.png";
+import NexusLogo from "@/assets/Logo.png";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth"; // Import useAuth to check initial state
+import { useAuth } from "@/hooks/useAuth"; // Still used to check if already logged in
 
+// --- Components (OrDivider, SocialLogins, AuthHeader) remain unchanged ---
+// Keep the OrDivider, SocialLogins, and AuthHeader components exactly as they were.
+// ... (Paste your existing OrDivider, SocialLogins, and AuthHeader components here) ...
 const OrDivider = () => (
     <div className="flex items-center my-2">
         <div className="flex-grow border-t border-border"></div>
@@ -37,12 +42,12 @@ const OrDivider = () => (
 
 const SocialLogins = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* TODO: Implement Appwrite OAuth */}
         <Button variant="outline" disabled>Google (Coming Soon)</Button>
         <Button variant="outline" disabled>GitHub (Coming Soon)</Button>
     </div>
 );
 
-// AuthHeader (no changes needed from previous version)
 const AuthHeader = ({ isDarkMode, toggleTheme }: { isDarkMode: boolean; toggleTheme: () => void }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigation = [
@@ -149,12 +154,15 @@ const AuthHeader = ({ isDarkMode, toggleTheme }: { isDarkMode: boolean; toggleTh
     );
 };
 
+
+// --- Main AuthPage Component ---
 export function AuthPage() {
+    // --- State variables remain the same ---
     const [isDarkMode, setIsDarkMode] = useState(
         document.documentElement.classList.contains("dark")
     );
     const [signupName, setSignupName] = useState("");
-    const [signupOrg, setSignupOrg] = useState("");
+    const [signupOrg, setSignupOrg] = useState(""); // Still capturing this, though not sending to account.create
     const [signupEmail, setSignupEmail] = useState("");
     const [signupPassword, setSignupPassword] = useState("");
     const [loginEmail, setLoginEmail] = useState("");
@@ -165,8 +173,15 @@ export function AuthPage() {
     const [showSignupPassword, setShowSignupPassword] = useState(false);
     const navigate = useNavigate();
     const { currentUser, loading: authLoading } = useAuth(); // Get current user state
+    const [alert, setAlert] = useState<{
+        type: "success" | "destructive";
+        message: string;
+    } | null>(null);
+    const [error, setError] = useState<string | null>(null); // General error state if needed
+    const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+    const USERS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID;
 
-    // Theme toggling logic
+    // --- Theme toggling logic remains the same ---
     const toggleTheme = () => { /* ... same as before ... */
         setIsDarkMode((prevMode) => {
             const newMode = !prevMode;
@@ -191,7 +206,7 @@ export function AuthPage() {
         return () => observer.disconnect();
     }, []);
 
-     // Effect to redirect if user is already logged in when visiting this page
+    // --- Redirect effect remains the same ---
      useEffect(() => {
         if (!authLoading && currentUser) {
             console.log("AuthPage: User already logged in, redirecting to /");
@@ -199,120 +214,151 @@ export function AuthPage() {
         }
      }, [currentUser, authLoading, navigate]);
 
-    const [alert, setAlert] = useState<{
-        type: "success" | "destructive";
-        message: string;
-    } | null>(null);
-
-    // showAlert function
+    // --- showAlert function remains the same ---
     const showAlert = (type: "success" | "destructive", message: string) => { /* ... same as before ... */
         setAlert({ type, message });
-        setTimeout(() => setAlert(null), 4000);
+        setTimeout(() => setAlert(null), 4000); // Increased timeout slightly
     };
 
-    // --- Supabase Signup Logic (No changes needed here) ---
-    const handleSignup = async () => { /* ... same as before ... */
-        if (!signupEmail || !signupPassword || !signupName) {
-            showAlert("destructive", "Please fill in Name, Email, and Password.");
-            return;
-        }
-        setSignupLoading(true);
-        setError(null);
+    const handleSignup = async () => {
+    // --- Input Validations (keep as before) ---
+    if (!signupEmail || !signupPassword || !signupName) {
+        showAlert("destructive", "Please fill in Name, Email, and Password.");
+        return;
+    }
+    if (signupPassword.length < 8) {
+         showAlert("destructive", "Password must be at least 8 characters long.");
+         return;
+    }
+    // --- ---
 
-        try {
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: signupEmail,
-                password: signupPassword,
-            });
+    // --- Config Check ---
+    if (!DATABASE_ID || !USERS_COLLECTION_ID) {
+        console.error("Database/Users Collection ID missing in .env for signup profile creation!");
+        showAlert("destructive", "Configuration error: Cannot create profile.");
+        return;
+    }
+    // --- ---
 
-            if (authError) throw authError;
+    setSignupLoading(true);
+    setError(null);
+    let createdAuthUser: Models.User<Models.Preferences> | null = null; // To hold the created user for profile step
 
-            const user = authData.user;
-            if (!user) {
-                throw new Error("Signup successful but user data is missing.");
-            }
+    try {
+        // --- 1. Create Appwrite Auth User ---
+        console.log("Attempting account.create...");
+        createdAuthUser = await account.create(
+            ID.unique(), // Let Appwrite generate Auth User ID
+            signupEmail,
+            signupPassword,
+            signupName
+        );
+        console.log("account.create successful:", createdAuthUser);
 
-            const { error: insertError } = await supabase
-                .from('users')
-                .insert({
-                    id: user.id,
-                    name: signupName,
-                    email: signupEmail,
-                    organization: signupOrg || null,
-                    role: 'user'
-                });
+        // --- 2. Immediately Log In ---
+        console.log("Attempting createEmailPasswordSession...");
+        await account.createEmailPasswordSession(signupEmail, signupPassword);
+        console.log("createEmailPasswordSession successful.");
 
-            if (insertError) {
-                console.error("Error inserting user profile:", insertError);
-                throw new Error(`Account created, but failed to save profile: ${insertError.message}`);
-            }
+        // --- 3. Create User Profile Document in Database ---
+        const newUserProfileData = {
+            userId: createdAuthUser.$id, // Link to the Auth user ID
+            name: signupName,
+            email: signupEmail,
+            organization: signupOrg || null, // Use state value or null
+            role: 'user' // Default role
+        };
 
-            showAlert(
-              "success",
-              "Account created! Please check your email to confirm your address before logging in."
-            );
-            setSignupName('');
-            setSignupOrg('');
-            setSignupEmail('');
-            setSignupPassword('');
+        console.log("Attempting databases.createDocument for user profile:", newUserProfileData);
+        // Use the Auth user.$id as the Document ID for easy lookup
+        await databases.createDocument(
+            DATABASE_ID,
+            USERS_COLLECTION_ID,
+            createdAuthUser.$id, // Use Auth User ID as Document ID
+            newUserProfileData
+            // TODO: Add document permissions if needed
+        );
+        console.log("User profile document created successfully.");
 
-        } catch (error: any) {
-            console.error("Signup Error:", error);
-            let message = error.message || "An unknown signup error occurred.";
-            if (error.message.includes("User already registered")) {
+        // --- 4. Success & Redirect ---
+        showAlert("success", "Account created and logged in! Redirecting...");
+        // Clear form (optional, as redirect happens quickly)
+        // setSignupName(''); setSignupOrg(''); setSignupEmail(''); setSignupPassword('');
+        navigate('/'); // Redirect to home page
+
+        // Note: Appwrite email verification still happens in the background if enabled.
+        // The user is logged in immediately here for convenience.
+
+    } catch (error: any) {
+        console.error("Signup Process Error:", error);
+        let message = error.message || "An unknown error occurred during signup.";
+
+        // More specific error handling
+        if (error instanceof AppwriteException) {
+             if (error.code === 409 && error.message.toLowerCase().includes('user already exists')) {
                 message = "An account with this email already exists. Please log in.";
-            } else if (error.message.includes("Password should be at least 6 characters")) {
-                 message = "Password should be at least 6 characters long.";
-            }
-            showAlert("destructive", message);
-        } finally {
-            setSignupLoading(false);
+             } else if (error.code === 401 && error.message.toLowerCase().includes('session')) {
+                 // This might happen if login fails right after signup for some reason
+                 message = "Account created, but automatic login failed. Please try logging in manually.";
+             } else if (error.code === 400 && error.message.toLowerCase().includes('password')) {
+                 message = "Password requirements not met.";
+             } else if ((error.code === 401 || error.code === 403 || error.code === 404) && error.message.toLowerCase().includes('database')) {
+                 // Error happened during profile creation
+                 message = "Account created, but failed to save profile. Please try logging in. If issues persist, contact support.";
+                 // Optionally: Attempt to clean up - delete the auth user if profile creation fails? (More complex)
+             }
         }
-     };
+        showAlert("destructive", message);
+    } finally {
+        setSignupLoading(false);
+    }
+ };
 
-    // --- Supabase Login Logic (REMOVED EXPLICIT NAVIGATE) ---
+    // --- Appwrite Login Logic ---
     const handleLogin = async () => {
         if (!loginEmail || !loginPassword) {
             showAlert("destructive", "Please enter both email and password.");
             return;
         }
         setLoginLoading(true);
-        setError(null);
+        setError(null); // Clear previous errors
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email: loginEmail,
-                password: loginPassword,
-            });
+            // Use Appwrite's createEmailPasswordSession
+            await account.createEmailPasswordSession(loginEmail, loginPassword);
 
-            if (error) throw error;
-
-            // AuthContext will now handle redirection via its onAuthStateChange listener
+            // Login successful! AuthContext's useEffect will re-run `account.get()`,
+            // find the session, update the state, and handle redirection.
             showAlert("success", "Logged in successfully! Redirecting...");
-            // No navigate('/') here anymore
+            navigate('/');
+            // No navigate('/') needed here.
 
         } catch (error: any) {
              console.error("Login Error:", error);
              let message = error.message || "An unknown login error occurred.";
-             if (error.message.includes("Invalid login credentials")) {
-                message = "Incorrect email or password. Please try again.";
-            } else if (error.message.includes("Email not confirmed")) {
-                 message = "Please confirm your email address before logging in. Check your inbox.";
+             // Appwrite specific error checking (examples)
+             if (error instanceof AppwriteException) {
+                 if (error.code === 401) { // 401 Unauthorized often means invalid credentials
+                    message = "Incorrect email or password. Please try again.";
+                 } else if (error.code === 400 && error.message.toLowerCase().includes('verification')) { // Check if verification is needed
+                     message = "Please verify your email address before logging in. Check your inbox.";
+                 } else if (error.code === 404) { // 404 Not Found might indicate user doesn't exist
+                     message = "User with this email not found.";
+                 }
              }
             showAlert("destructive", message);
         } finally {
             setLoginLoading(false);
         }
     };
-    const [error, setError] = useState<string | null>(null);
 
-     // If auth is still loading or user is logged in (and redirect hasn't happened yet), show minimal UI or null
+
+     // --- Loading/Redirect Check remains the same ---
      if (authLoading || (!authLoading && currentUser)) {
-        // You could show a spinner here if authLoading is true
-        return null; // Avoid rendering the form if already logged in or initial check ongoing
+        return null; // Show nothing or a spinner while loading/redirecting
      }
 
-    // JSX structure
+    // --- JSX structure remains the same ---
     return (
         <>
             <AuthHeader isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
@@ -336,11 +382,12 @@ export function AuthPage() {
                         </div>
                     </Alert>
                 )}
-                 {error && <div className="text-red-500 mt-2">{error}</div>}
+                 {/* Optional: General error display if needed */}
+                 {/* {error && <div className="text-red-500 mt-2">{error}</div>} */}
             </div>
 
             <div className="w-full min-h-screen lg:grid lg:grid-cols-2">
-                {/* Left Column (Illustration) */}
+                {/* Left Column (Illustration) - No changes */}
                 <div className="hidden lg:flex flex-col items-center justify-center p-12 bg-background">
                    {/* ... same illustration content ... */}
                     <div className="text-center space-y-8">
@@ -395,10 +442,9 @@ export function AuthPage() {
 
                             {/* Login Tab */}
                             <TabsContent value="login" className="mt-4">
-                                {/* ... same Card structure ... */}
                                 <Card className="border-none shadow-none bg-transparent">
                                     <CardContent className="space-y-4 p-0">
-                                        {/* ... Input fields ... */}
+                                        {/* ... Input fields remain the same ... */}
                                          <div className="space-y-2">
                                             <Label htmlFor="login-email">Email</Label>
                                             <Input
@@ -432,9 +478,10 @@ export function AuthPage() {
                                                 </button>
                                             </div>
                                         </div>
+                                        {/* Uses Appwrite handleLogin */}
                                         <Button
                                             className="w-full btn-primary"
-                                            onClick={handleLogin} // Uses login handler (no navigate)
+                                            onClick={handleLogin}
                                             disabled={loginLoading}
                                         >
                                             {loginLoading ? "Logging in..." : "Login"}
@@ -447,9 +494,9 @@ export function AuthPage() {
 
                             {/* Signup Tab */}
                             <TabsContent value="signup" className="mt-4">
-                                {/* ... same Card structure and fields ... */}
                                  <Card className="border-none shadow-none bg-transparent">
                                     <CardContent className="space-y-3 p-0">
+                                        {/* ... Input fields remain the same ... */}
                                         <div className="space-y-2">
                                             <Label htmlFor="signup-name">Full Name</Label>
                                             <Input
@@ -489,7 +536,7 @@ export function AuthPage() {
                                                     value={signupPassword}
                                                     onChange={(e) => setSignupPassword(e.target.value)}
                                                     required
-                                                    minLength={6}
+                                                    minLength={8} // Appwrite default minimum
                                                 />
                                                 <button
                                                     type="button"
@@ -500,9 +547,10 @@ export function AuthPage() {
                                                     {showSignupPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                                 </button>
                                             </div>
-                                             <p className="text-xs text-muted-foreground">Password must be at least 6 characters.</p>
+                                             <p className="text-xs text-muted-foreground">Password must be at least 8 characters.</p>
                                         </div>
                                         <div className="pt-2">
+                                            {/* Uses Appwrite handleSignup */}
                                             <Button
                                                 className="w-full btn-primary"
                                                 onClick={handleSignup}
@@ -523,3 +571,6 @@ export function AuthPage() {
         </>
     );
 }
+
+// Export default if this is the standard export, otherwise keep named export
+// export default AuthPage; // If this was the original export style

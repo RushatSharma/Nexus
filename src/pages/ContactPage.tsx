@@ -1,36 +1,56 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react'; // Add useEffect here
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { Mail, Phone, MapPin, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input"; // Although Input isn't used, keep for consistency if needed later
+// import { Input } from "@/components/ui/input"; // Not used
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AuroraTextEffect } from "@/components/AuroraTextEffect";
-import { useAuth } from '../hooks/useAuth'; // Auth hook now uses Supabase context
-import { supabase } from '@/supabaseClient'; // Import Supabase client
-// Removed Firebase imports: import { db } from '@/firebase';
-// Removed Firebase imports: import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../hooks/useAuth';
+// Import Appwrite client, ID, and specific error types
+import { databases, ID } from '@/appwriteClient';
+import { AppwriteException } from 'appwrite';
+import { toast } from 'sonner'; // Using sonner for notifications
+
+// --- Get Appwrite IDs from .env ---
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const MESSAGES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_MESSAGES_COLLECTION_ID;
+// --- ---
 
 export function ContactPage() {
-    const { currentUser } = useAuth(); // Get current Supabase user
+    const { currentUser } = useAuth();
     const [service, setService] = useState('');
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false); // Add loading state
-
-    // Ref for the textarea to adjust height
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const messageRef = useRef<HTMLTextAreaElement>(null);
+
+    // Add validation check for environment variables
+    useEffect(() => {
+        if (!DATABASE_ID || !MESSAGES_COLLECTION_ID) {
+            console.error("Appwrite Database/Collection IDs missing in .env file!");
+            setError("Configuration error: Cannot connect to the database. Please contact support.");
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Check if user is logged in (using Supabase user object now)
+
+        // Environment variable check
+        if (!DATABASE_ID || !MESSAGES_COLLECTION_ID) {
+            setError("Configuration error prevents sending messages.");
+            toast.error("Configuration error. Cannot send message.");
+            return;
+        }
+
         if (!currentUser) {
             setError("You must be logged in to send a message.");
-            // Optionally, you could redirect to login here: navigate('/login');
+            // Consider redirecting or showing login modal
+            // navigate('/login');
             return;
         }
         if (!service || !message) {
@@ -39,63 +59,76 @@ export function ContactPage() {
         }
         setError('');
         setSuccess(false);
-        setIsSubmitting(true); // Set loading state
+        setIsSubmitting(true);
+        const loadingToastId = toast.loading("Sending message...");
 
         try {
-            // Prepare data for Supabase insert
+            // Prepare data matching Appwrite collection attributes
+            // Ensure attribute keys match your Appwrite 'messages' table columns
             const messageData = {
-                user_id: currentUser.id, // Foreign key to the users table
-                email: currentUser.email, // User's email
+                userId: currentUser.$id, // Link to the user
+                email: currentUser.email,
                 service: service,
                 message: message,
-                // 'created_at' and 'status' will use default values set in the database
+                status: 'pending', // Default status from Appwrite table should apply if not sent
             };
 
-            // Insert data into the 'messages' table
-            const { error: insertError } = await supabase
-                .from('messages') // Your table name
-                .insert(messageData);
+            // Use Appwrite's createDocument
+            await databases.createDocument(
+                DATABASE_ID,
+                MESSAGES_COLLECTION_ID,
+                ID.unique(), // Let Appwrite generate document ID
+                messageData
+                // You might need document-level permissions here if your collection requires it
+                // e.g., [Permission.read(Role.user(currentUser.$id)), Permission.update(Role.user(currentUser.$id))]
+            );
 
-            if (insertError) {
-                // Throw error if insert fails
-                throw insertError;
-            }
-
+            toast.success("Message sent successfully!", { id: loadingToastId });
             setSuccess(true);
-            setMessage(''); // Clear message field
-            setService('');   // Clear service selection
-             if (messageRef.current) { // Reset textarea height
+            setMessage('');
+            setService('');
+             if (messageRef.current) {
                 messageRef.current.style.height = "auto";
              }
         } catch (err: any) {
              console.error("Error sending message:", err);
-            setError(`Failed to send message: ${err.message || 'Please try again.'}`);
+             let errorMsg = `Failed to send message: ${err.message || 'Please try again.'}`;
+             if (err instanceof AppwriteException) {
+                 if (err.code === 401 || err.code === 403) {
+                    errorMsg = "Failed to send message: Permission denied. Check collection permissions.";
+                 } else if (err.code === 404) {
+                    errorMsg = "Failed to send message: Database or Collection ID might be incorrect.";
+                 } else if (err.message.includes('Invalid document structure') || err.code === 400) {
+                     errorMsg = "Failed to send message: Data doesn't match expected format. Check attributes.";
+                 }
+             }
+             setError(errorMsg);
+             toast.error(errorMsg, { id: loadingToastId });
         } finally {
-            setIsSubmitting(false); // Reset loading state
+            setIsSubmitting(false);
         }
     };
 
-    // Textarea height adjustment remains the same
+    // handleMessageChange remains the same
     const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setMessage(e.target.value);
         if (messageRef.current) {
-            messageRef.current.style.height = "auto"; // Reset height first
-            // Set height based on scroll height, capped at viewport height fraction
-            const maxHeight = window.innerHeight * 0.3; // Cap at 30vh
+            messageRef.current.style.height = "auto";
+            const maxHeight = window.innerHeight * 0.3;
             messageRef.current.style.height = `${Math.min(messageRef.current.scrollHeight, maxHeight)}px`;
         }
     };
 
 
-    // JSX structure remains mostly the same
+    // --- JSX remains the same ---
     return (
         <div className="flex flex-col min-h-screen bg-background">
             <Header/>
             <main className="flex-grow container mx-auto px-4 py-12 lg:py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-                    {/* Left Column (Info) - No changes needed */}
+                    {/* Left Column (Info) */}
                     <div className="text-left">
-                        <AuroraTextEffect
+                         <AuroraTextEffect
                             text="Let's Talk Business"
                             fontSize="clamp(2.5rem, 6vw, 4rem)"
                             className="justify-start p-0 m-0"
@@ -106,7 +139,6 @@ export function ContactPage() {
                            We're here to help you navigate the digital landscape and achieve
                            your goals.
                          </p>
-                         {/* ... rest of the info section ... */}
                          <p className="text-lg text-muted-foreground mb-8">
                              Whether you're looking to boost your brand's visibility, drive
                              more traffic, or increase conversions, our team is ready to
@@ -162,9 +194,10 @@ export function ContactPage() {
                             </CardHeader>
                             <form onSubmit={handleSubmit}>
                                 <CardContent className="space-y-4">
+                                    {/* Service Select */}
                                     <div className="sm:col-span-2 grid gap-2">
                                         <Label htmlFor="services" className="text-base">Services Interested In</Label>
-                                        <Select onValueChange={setService} value={service} required> {/* Added required */}
+                                        <Select onValueChange={setService} value={service} required>
                                             <SelectTrigger id="services" className="text-base p-3">
                                                 <SelectValue placeholder="Select a service" />
                                             </SelectTrigger>
@@ -175,33 +208,35 @@ export function ContactPage() {
                                                 <SelectItem value="content-marketing" className="text-base">Content Marketing</SelectItem>
                                                 <SelectItem value="branding-creative" className="text-base">Branding & Creative Services</SelectItem>
                                                 <SelectItem value="analytics-reporting" className="text-base">Analytics & Reporting</SelectItem>
-                                                {/* Add other services if needed */}
                                                 <SelectItem value="other" className="text-base">Other</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                    {/* Message Textarea */}
                                     <div className="sm:col-span-2 grid gap-2">
                                         <Label htmlFor="message" className="text-base">Message</Label>
                                         <Textarea
                                             id="message"
                                             placeholder="Tell us about your project goals"
-                                            className="text-base p-3 resize-none overflow-y-auto" // Added overflow-y-auto
-                                            style={{ maxHeight: '30vh', minHeight: '80px' }} // Set max/min height via style
+                                            className="text-base p-3 resize-none overflow-y-auto"
+                                            style={{ maxHeight: '30vh', minHeight: '80px' }}
                                             value={message}
                                             ref={messageRef}
-                                            onChange={handleMessageChange} // Use updated handler
-                                            required // Added required
+                                            onChange={handleMessageChange}
+                                            required
                                         />
                                     </div>
+                                    {/* Error/Success Messages */}
                                     {error && <p className="text-sm text-destructive">{error}</p>}
                                     {success && (
-                                        <div className="flex items-center text-sm text-green-600 dark:text-green-500"> {/* Use green color */}
+                                        <div className="flex items-center text-sm text-green-600 dark:text-green-500">
                                             <CheckCircle className="w-4 h-4 mr-2"/>
                                             Message sent successfully! We'll get back to you soon.
                                         </div>
                                     )}
                                 </CardContent>
                                 <CardFooter className="flex justify-end">
+                                    {/* Submit Button */}
                                     <Button type="submit" className="btn-primary text-base px-6 py-3" disabled={isSubmitting}>
                                         {isSubmitting ? 'Sending...' : 'Send Message'}
                                     </Button>
@@ -215,3 +250,5 @@ export function ContactPage() {
         </div>
     );
 }
+
+// export default ContactPage; // Use if needed

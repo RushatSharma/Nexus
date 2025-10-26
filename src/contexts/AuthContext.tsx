@@ -1,19 +1,26 @@
 import React, { createContext, useEffect, useState, useContext, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/supabaseClient';
+import { Account, Models, AppwriteException, Query, ID } from 'appwrite'; // Import Query
+import { account, databases } from '@/appwriteClient';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'sonner'; // For potential error feedback
+
+// --- Get Appwrite IDs from .env ---
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const USERS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID;
+// --- ---
 
 export interface UserData {
-    id?: string;
+    $id?: string; // Appwrite document ID
+    userId?: string; // Custom attribute storing Auth User ID
     name?: string;
     organization?: string;
     role?: 'admin' | 'user';
+    email?: string; // Stored in DB for consistency, also available in Auth
 }
 
 export interface AuthContextType {
-    currentUser: User | null;
-    session: Session | null;
-    loading: boolean; // Indicates initial auth check + profile fetch is happening
+    currentUser: Models.User<Models.Preferences> | null;
+    loading: boolean;
     userData: UserData | null;
     isAdmin: boolean;
 }
@@ -21,149 +28,155 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
+    const [currentUser, setCurrentUser] = useState<Models.User<Models.Preferences> | null>(null);
     const [userData, setUserData] = useState<UserData | null>(null);
-    const [loading, setLoading] = useState(true); // *** Start loading: true ***
+    const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
-    // --- Helper function for profile logic (same as before) ---
-    const fetchOrCreateProfile = async (user: User) => {
-        console.log("AuthContext: fetchOrCreateProfile called for user ID:", user.id);
+    // --- Function to Fetch or Create User Profile in Appwrite Database ---
+    const fetchOrCreateProfile = async (user: Models.User<Models.Preferences>) => {
+        console.log("AuthContext: fetchOrCreateProfile called for user ID:", user.$id);
+
+        if (!DATABASE_ID || !USERS_COLLECTION_ID) {
+            console.error("Database/Users Collection ID missing in .env for profile fetch!");
+            toast.error("Configuration error: Cannot load user profile.");
+            // Set minimal data, but mark as not admin and potentially show error elsewhere
+            setUserData({ userId: user.$id, email: user.email, name: user.name || 'User', role: 'user' });
+            setIsAdmin(false);
+            return null; // Indicate failure due to config
+        }
+
         try {
-            console.log("AuthContext: Entering profile try block.");
-            const { data, error: fetchError, status } = await supabase
-                .from('users')
-                .select(`name, organization, role`)
-                .eq('id', user.id)
-                .single();
+            console.log(`AuthContext: Querying collection ${USERS_COLLECTION_ID} for userId=${user.$id}`);
+            // 1. Try to find existing profile document
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                USERS_COLLECTION_ID,
+                [
+                    Query.equal('userId', user.$id), // Query by your custom userId attribute
+                    Query.limit(1) // We only expect one
+                ]
+            );
 
-            console.log("AuthContext: Profile select result - Status:", status, "Data:", data, "Error:", fetchError);
+            console.log("AuthContext: Profile query response:", response);
 
-            if (fetchError && status !== 406) {
-                console.error('AuthContext: Error fetching user profile:', fetchError);
-                throw fetchError;
-            }
-
-            if (data) {
-                console.log("AuthContext: Profile found, setting user data.");
-                setUserData(data as UserData);
-                setIsAdmin(data.role === 'admin');
-                return data;
-            } else if (status === 406) {
-                console.warn("AuthContext: User profile not found (406), attempting to create...");
-                const profileName = user.user_metadata?.name || user.email?.split('@')[0] || 'New User';
-                const profileOrg = user.user_metadata?.organization || null;
-                const newUserProfile: UserData = {
-                    id: user.id,
+            if (response.documents.length > 0) {
+                // Profile Found
+                const profile = response.documents[0] as UserData & Models.Document; // Cast includes Appwrite metadata like $id
+                console.log("AuthContext: Profile found, setting user data:", profile);
+                // Map Appwrite document to UserData
+                const fetchedUserData: UserData = {
+                    $id: profile.$id,
+                    userId: profile.userId,
+                    name: profile.name,
+                    email: profile.email,
+                    organization: profile.organization,
+                    role: profile.role === 'admin' ? 'admin' : 'user' // Ensure valid role
+                };
+                setUserData(fetchedUserData);
+                setIsAdmin(fetchedUserData.role === 'admin');
+                return fetchedUserData; // Return the fetched data
+            } else {
+                // Profile Not Found - Create it (First login after signup)
+                console.warn("AuthContext: User profile not found, creating...");
+                // Use name from Appwrite Auth if available, otherwise fallback
+                const profileName = user.name || user.email?.split('@')[0] || 'New User';
+                // NOTE: We don't get organization from `account.create`, so it will be null/undefined initially
+                const newUserProfileData: Omit<UserData, '$id'> = { // Data to insert
+                    userId: user.$id,
                     name: profileName,
-                    organization: profileOrg || undefined,
-                    role: 'user'
+                    email: user.email,
+                    organization: undefined, // Or null if your attribute allows it
+                    role: 'user' // Default role for new signups
                 };
 
-                console.log("AuthContext: Inserting new profile:", { id: user.id, name: profileName, email: user.email, organization: profileOrg, role: 'user' });
-                const { error: insertError } = await supabase
-                    .from('users')
-                    .insert({ id: user.id, name: profileName, email: user.email, organization: profileOrg, role: 'user' });
+                console.log("AuthContext: Inserting new profile:", newUserProfileData);
 
-                if (insertError) {
-                    console.error("AuthContext: Error creating user profile:", insertError);
-                    throw insertError;
-                }
+                // Use the Auth user.$id as the Document ID for easy lookup later
+                const newDocument = await databases.createDocument(
+                    DATABASE_ID,
+                    USERS_COLLECTION_ID,
+                    ID.unique(), 
+                    newUserProfileData
+                    // TODO: Set document-level permissions if needed upon creation
+                    // e.g., [Permission.read(Role.user(user.$id)), Permission.update(Role.user(user.$id))]
+                );
 
-                console.log("AuthContext: User profile created successfully.");
-                setUserData(newUserProfile);
-                setIsAdmin(false);
-                return newUserProfile;
-            } else {
-                 console.warn("AuthContext: Profile select returned ambiguous status:", status);
-                 setUserData(null);
-                 setIsAdmin(false);
-                 return null;
+                console.log("AuthContext: User profile created successfully:", newDocument);
+                const createdUserData: UserData = {
+                    $id: newDocument.$id,
+                    ...newUserProfileData
+                };
+                setUserData(createdUserData);
+                setIsAdmin(false); // New users are not admins by default
+                return createdUserData; // Return the newly created data
             }
 
         } catch (error) {
-            console.error('AuthContext: Caught error during profile fetch/create process:', error);
-            setUserData(null);
+            console.error('AuthContext: Error during profile fetch/create:', error);
+             if (error instanceof AppwriteException) {
+                 toast.error(`Profile Error (${error.code}): ${error.message}. Check collection permissions/attributes.`);
+             } else {
+                 toast.error("An unexpected error occurred while loading user profile.");
+             }
+            setUserData(null); // Clear data on error
             setIsAdmin(false);
-            return null; // Return null on error
+            return null; // Indicate failure
         }
     };
 
+    // --- useEffect for Session Check ---
     useEffect(() => {
-        console.log("AuthContext: Setting up onAuthStateChange listener.");
-        // We start in loading state, setLoading(true) is the default useState value
+        console.log("AuthContext: Checking Appwrite session on load.");
+        setLoading(true);
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (_event, currentSession) => {
-                console.log("AuthContext: onAuthStateChange triggered. Event:", _event, "Session:", currentSession);
+        const checkSession = async () => {
+            try {
+                const user = await account.get();
+                console.log("AuthContext: Session found for user:", user);
+                setCurrentUser(user); // Set auth user state first
+                await fetchOrCreateProfile(user); // Then fetch/create profile data from DB
 
-                const user = currentSession?.user ?? null;
-
-                // Set user/session state immediately
-                setSession(currentSession);
-                setCurrentUser(user);
-
-                if (!user) {
-                    // Logged out state (or initial check finds no user)
-                    console.log("AuthContext Listener: No user found, clearing data and finishing load.");
-                    setUserData(null);
-                    setIsAdmin(false);
-                    setLoading(false); // Finish loading
-                } else {
-                    // Logged in state (initial check found user OR user just logged in)
-                    console.log("AuthContext Listener: User found, attempting profile fetch/create...");
-                    try {
-                        const profileData = await fetchOrCreateProfile(user); // Attempt to get profile
-
-                        // Redirect ONLY if profile fetch succeeds AND user is on an auth page
-                        if (profileData && (location.pathname === '/login' || location.pathname === '/signup')) {
-                             console.log("AuthContext Listener: Redirecting logged-in user from auth page to /");
-                             navigate('/');
-                        }
-                    } catch (error) {
-                        console.error("AuthContext Listener: Error during profile handling:", error);
-                        // Clear potentially stale data on error
-                        setUserData(null);
-                        setIsAdmin(false);
-                    } finally {
-                        console.log("AuthContext Listener: Finished processing logged-in state, setting loading false.");
-                         // Finish loading AFTER profile attempt (success or fail)
-                        setLoading(false);
-                    }
+                // Redirect if logged in and on an auth page (check AFTER profile attempt)
+                if (location.pathname === '/login' || location.pathname === '/signup') {
+                    console.log("AuthContext: Redirecting logged-in user from auth page to /");
+                    navigate('/');
                 }
-            }
-        );
 
-        // Cleanup
-        return () => {
-            console.log("AuthContext: Unsubscribing auth listener.");
-            subscription?.unsubscribe();
+            } catch (error) {
+                // No session exists or error fetching account
+                console.log("AuthContext: No active session found or error:", error);
+                setCurrentUser(null); // Clear auth state
+                setUserData(null);    // Clear profile state
+                setIsAdmin(false);
+            } finally {
+                console.log("AuthContext: Finished session check, setting loading false.");
+                setLoading(false);
+            }
         };
-        // Dependencies: navigate and location are generally stable, but including them ensures
-        // the effect *could* re-run if routing changes fundamentally, which is unlikely here.
-        // Primarily, this effect runs once on mount due to the empty array pattern implicitly used by useEffect's cleanup.
-    }, [navigate, location]);
+
+        checkSession();
+
+    }, [navigate, location]); // Dependencies
 
 
     const value = {
         currentUser,
-        session,
         loading,
         userData,
         isAdmin,
     };
 
-    // Render children ONLY after the initial loading is absolutely complete
-    // You could show a loading spinner here: { loading ? <YourSpinner /> : children }
-    return <AuthContext.Provider value={value}>{!loading ? children : null}</AuthContext.Provider>;
+    // Render children ONLY after the initial loading is complete
+    return <AuthContext.Provider value={value}>{!loading ? children : null /* Or a Loading Spinner */}</AuthContext.Provider>;
 };
 
-// Custom hook (remains the same)
+// Custom hook (no change)
 export const useAuth = (): AuthContextType => {
-    const context = useContext(AuthContext);
+    // ... (keep existing useAuth hook code) ...
+     const context = useContext(AuthContext);
     if (context === null) {
         throw new Error('useAuth must be used within an AuthProvider');
     }
