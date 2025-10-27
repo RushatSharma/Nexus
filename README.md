@@ -1,7 +1,5 @@
 # Nexus - Digital Marketing Agency Website
 
-![Nexus Logo](public/LogoAbout.png)
-
 Nexus is a modern, full-stack website for a digital marketing agency, built with a performance-first approach. It features a dynamic project portfolio, a complete admin dashboard for content management, and a secure Appwrite backend for handling data, authentication, and user messages.
 
 ## Live Demo
