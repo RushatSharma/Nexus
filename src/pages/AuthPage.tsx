@@ -156,7 +156,8 @@ const AuthHeader = ({ isDarkMode, toggleTheme }: { isDarkMode: boolean; toggleTh
 
 
 // --- Main AuthPage Component ---
-export function AuthPage() {
+// --- THIS IS THE FIX ---
+export default function AuthPage() {
     // --- State variables remain the same ---
     const [isDarkMode, setIsDarkMode] = useState(
         document.documentElement.classList.contains("dark")
@@ -573,4 +574,4 @@ export function AuthPage() {
 }
 
 // Export default if this is the standard export, otherwise keep named export
-// export default AuthPage; // If this was the original export style
+// export default AuthPage; // <-- Removed this commented line
